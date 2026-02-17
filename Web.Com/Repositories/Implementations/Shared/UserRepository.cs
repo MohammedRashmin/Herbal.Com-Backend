@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Web.Com.Helpers.Constants;
-using Web.Com.Models.Identity;
+using Web.Com.Entities.Identity;
 using Web.Com.Repositories.Interfaces.Shared;
 
 namespace Web.Com.Repositories.Implementations.Shared;
@@ -48,6 +48,11 @@ public class UserRepository : IUserRepository
         await _userManager.AddToRoleAsync(user, Roles.Customer);
 
         return user;
+    }
+
+    public async Task UpdateAsync(ApplicationUser user)
+    {
+        await _userManager.UpdateAsync(user);
     }
 
     public async Task<bool> CheckPasswordAsync(ApplicationUser user, string password)

@@ -1,4 +1,5 @@
 using Web.Com.DTOs.Shared;
+using Web.Com.Entities.Identity;
 using Web.Com.Helpers;
 using Web.Com.Repositories.Interfaces.Shared;
 
@@ -19,45 +20,47 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
     {
-        // Validate input
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
         {
             throw new ArgumentException("Email and password are required.");
         }
 
-        // Get user by email
         var user = await _userRepository.GetByEmailAsync(request.Email);
         if (user == null)
         {
             throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
-        // Check if password hash matches
         var isValidPassword = await _userRepository.CheckPasswordAsync(user, request.Password);
         if (!isValidPassword)
         {
             throw new UnauthorizedAccessException("Invalid email or password.");
         }
 
-        // Get user roles
         var roles = await _userRepository.GetUserRolesAsync(user);
-
-        // Generate JWT token
         var token = _jwtTokenGenerator.GenerateToken(user, roles);
+
+        // Generate and save refresh token
+        var refreshToken = Guid.NewGuid().ToString();
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
 
         return new LoginResponseDto
         {
+            UserId = user.Id,
             Token = token,
+            RefreshToken = refreshToken,
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Role = roles.FirstOrDefault() ?? "User",
             Roles = roles.ToList()
         };
     }
 
     public async Task<LoginResponseDto> SignupAsync(SignupRequestDto request)
     {
-        // Validate input
         if (string.IsNullOrWhiteSpace(request.Email) || 
             string.IsNullOrWhiteSpace(request.FirstName) ||
             string.IsNullOrWhiteSpace(request.LastName) ||
@@ -66,21 +69,18 @@ public class AuthService : IAuthService
             throw new ArgumentException("All fields are required.");
         }
 
-        // Check if passwords match
         if (request.Password != request.ConfirmPassword)
         {
             throw new ArgumentException("Password and confirm password do not match.");
         }
 
-        // Check if user already exists
         var existingUser = await _userRepository.GetByEmailAsync(request.Email);
         if (existingUser != null)
         {
             throw new InvalidOperationException("User with this email already exists.");
         }
 
-        // Create new user
-        var user = new Models.Identity.ApplicationUser
+        var user = new ApplicationUser
         {
             Email = request.Email,
             UserName = request.Email,
@@ -91,18 +91,24 @@ public class AuthService : IAuthService
 
         await _userRepository.CreateAsync(user, request.Password);
 
-        // Get user roles (default: Customer)
         var roles = await _userRepository.GetUserRolesAsync(user);
-
-        // Generate JWT token
         var token = _jwtTokenGenerator.GenerateToken(user, roles);
+
+        // Generate and save refresh token
+        var refreshToken = Guid.NewGuid().ToString();
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+        await _userRepository.UpdateAsync(user);
 
         return new LoginResponseDto
         {
+            UserId = user.Id,
             Token = token,
+            RefreshToken = refreshToken,
             Email = user.Email ?? string.Empty,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Role = roles.FirstOrDefault() ?? "User",
             Roles = roles.ToList()
         };
     }
