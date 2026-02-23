@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Web.Com.Data;
 using Web.Com.DTOs.Admin;
-using Web.Com.Entities;
-using Web.Com.Helpers.Constants;
+using Web.Com.Services.Interfaces.Shared;
 
 namespace Web.Com.Controllers.Admin;
 
@@ -13,95 +10,42 @@ namespace Web.Com.Controllers.Admin;
 [Authorize(Policy = "AdminOnly")]
 public class BannerController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IBannerService _bannerService;
 
-    public BannerController(AppDbContext context)
+    public BannerController(IBannerService bannerService)
     {
-        _context = context;
+        _bannerService = bannerService;
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetBanners()
+    public async Task<ActionResult<IEnumerable<BannerResponseDto>>> GetBanners()
     {
-        var banners = await _context.Banners
-            .OrderBy(b => b.DisplayOrder)
-            .Select(b => new
-            {
-                b.Id,
-                b.Title,
-                b.Subtitle,
-                b.ImageUrl,
-                b.Tag,
-                b.ProductId,
-                b.CategoryId,
-                b.ExternalUrl,
-                b.IsMemberOnly,
-                b.EndDate,
-                b.DisplayOrder,
-                b.IsActive
-            })
-            .ToListAsync();
-
+        var banners = await _bannerService.GetAllBannersAsync();
         return Ok(banners);
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateBanner([FromBody] CreateBannerDto dto)
+    public async Task<ActionResult<BannerResponseDto>> CreateBanner([FromBody] CreateBannerDto dto)
     {
-        var banner = new Banner
-        {
-            Title = dto.Title,
-            Subtitle = dto.Subtitle,
-            ImageUrl = dto.ImageUrl,
-            Tag = dto.Tag,
-            ProductId = dto.ProductId,
-            CategoryId = dto.CategoryId,
-            ExternalUrl = dto.ExternalUrl,
-            IsMemberOnly = dto.IsMemberOnly,
-            EndDate = dto.EndDate,
-            DisplayOrder = dto.DisplayOrder
-        };
-
-        _context.Banners.Add(banner);
-        await _context.SaveChangesAsync();
-
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var banner = await _bannerService.CreateBannerAsync(dto);
         return Ok(new { id = banner.Id, message = "Banner created successfully" });
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateBanner(int id, [FromBody] UpdateBannerDto dto)
     {
-        var banner = await _context.Banners.FindAsync(id);
-        if (banner == null)
-            return NotFound(new { message = "Banner not found" });
-
-        banner.Title = dto.Title;
-        banner.Subtitle = dto.Subtitle;
-        banner.ImageUrl = dto.ImageUrl;
-        banner.Tag = dto.Tag;
-        banner.ProductId = dto.ProductId;
-        banner.CategoryId = dto.CategoryId;
-        banner.ExternalUrl = dto.ExternalUrl;
-        banner.IsMemberOnly = dto.IsMemberOnly;
-        banner.EndDate = dto.EndDate;
-        banner.DisplayOrder = dto.DisplayOrder;
-        banner.IsActive = dto.IsActive;
-
-        await _context.SaveChangesAsync();
-
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await _bannerService.UpdateBannerAsync(id, dto);
+        if (!result) return NotFound(new { message = "Banner not found" });
         return Ok(new { message = "Banner updated successfully" });
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteBanner(int id)
     {
-        var banner = await _context.Banners.FindAsync(id);
-        if (banner == null)
-            return NotFound(new { message = "Banner not found" });
-
-        _context.Banners.Remove(banner);
-        await _context.SaveChangesAsync();
-
+        var result = await _bannerService.DeleteBannerAsync(id);
+        if (!result) return NotFound(new { message = "Banner not found" });
         return Ok(new { message = "Banner deleted successfully" });
     }
 }

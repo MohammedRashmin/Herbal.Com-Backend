@@ -1,10 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Web.Com.Data;
 using Web.Com.DTOs.User;
-using Web.Com.Entities;
+using Web.Com.Services.Interfaces.User;
 
 namespace Web.Com.Controllers.User;
 
@@ -13,11 +11,11 @@ namespace Web.Com.Controllers.User;
 [Authorize]
 public class CartController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ICartService _cartService;
 
-    public CartController(AppDbContext context)
+    public CartController(ICartService cartService)
     {
-        _context = context;
+        _cartService = cartService;
     }
 
     [HttpGet]
@@ -27,23 +25,7 @@ public class CartController : ControllerBase
         if (string.IsNullOrEmpty(userId)) 
             return Unauthorized();
 
-        var cartItems = await _context.CartItems
-            .Include(c => c.Product)
-                .ThenInclude(p => p.Images)
-            .Where(c => c.UserId == userId)
-            .Select(c => new CartItemDto
-            {
-                Id = c.Id,
-                ProductId = c.ProductId,
-                ProductName = c.Product.Name,
-                ProductImageUrl = c.Product.Images.FirstOrDefault() != null ? c.Product.Images.First().ImageUrl : null,
-                Price = c.Product.Price,
-                DiscountPrice = c.Product.DiscountPrice,
-                Quantity = c.Quantity,
-                Stock = c.Product.Stock
-            })
-            .ToListAsync();
-
+        var cartItems = await _cartService.GetCartAsync(userId);
         return Ok(cartItems);
     }
 
@@ -54,36 +36,19 @@ public class CartController : ControllerBase
         if (string.IsNullOrEmpty(userId)) 
             return Unauthorized();
 
-        var product = await _context.Products.FindAsync(dto.ProductId);
-        if (product == null)
-            return NotFound(new { message = "Product not found" });
-
-        if (product.Stock < dto.Quantity)
-            return BadRequest(new { message = "Insufficient stock" });
-
-        // Check if item already in cart
-        var existingItem = await _context.CartItems
-            .FirstOrDefaultAsync(c => c.UserId == userId && c.ProductId == dto.ProductId);
-
-        if (existingItem != null)
+        try
         {
-            existingItem.Quantity += dto.Quantity;
-            if (existingItem.Quantity > product.Stock)
-                return BadRequest(new { message = "Quantity exceeds available stock" });
+            await _cartService.AddToCartAsync(userId, dto);
+            return Ok(new { message = "Item added to cart" });
         }
-        else
+        catch (KeyNotFoundException ex)
         {
-            var cartItem = new CartItem
-            {
-                UserId = userId,
-                ProductId = dto.ProductId,
-                Quantity = dto.Quantity
-            };
-            _context.CartItems.Add(cartItem);
+            return NotFound(new { message = ex.Message });
         }
-
-        await _context.SaveChangesAsync();
-        return Ok(new { message = "Item added to cart" });
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpPut("update")]
@@ -93,28 +58,19 @@ public class CartController : ControllerBase
         if (string.IsNullOrEmpty(userId)) 
             return Unauthorized();
 
-        var cartItem = await _context.CartItems
-            .Include(c => c.Product)
-            .FirstOrDefaultAsync(c => c.Id == dto.CartItemId && c.UserId == userId);
-
-        if (cartItem == null)
-            return NotFound(new { message = "Cart item not found" });
-
-        if (dto.Quantity <= 0)
+        try
         {
-            _context.CartItems.Remove(cartItem);
+            await _cartService.UpdateCartItemAsync(dto.CartItemId, dto);
+            return Ok(new { message = "Cart updated" });
         }
-        else if (dto.Quantity > cartItem.Product.Stock)
+        catch (KeyNotFoundException ex)
         {
-            return BadRequest(new { message = "Quantity exceeds available stock" });
+            return NotFound(new { message = ex.Message });
         }
-        else
+        catch (InvalidOperationException ex)
         {
-            cartItem.Quantity = dto.Quantity;
+            return BadRequest(new { message = ex.Message });
         }
-
-        await _context.SaveChangesAsync();
-        return Ok(new { message = "Cart updated" });
     }
 
     [HttpDelete("remove/{itemId}")]
@@ -124,15 +80,7 @@ public class CartController : ControllerBase
         if (string.IsNullOrEmpty(userId)) 
             return Unauthorized();
 
-        var cartItem = await _context.CartItems
-            .FirstOrDefaultAsync(c => c.Id == itemId && c.UserId == userId);
-
-        if (cartItem == null)
-            return NotFound(new { message = "Cart item not found" });
-
-        _context.CartItems.Remove(cartItem);
-        await _context.SaveChangesAsync();
-
+        await _cartService.RemoveFromCartAsync(itemId);
         return Ok(new { message = "Item removed from cart" });
     }
 
@@ -143,13 +91,7 @@ public class CartController : ControllerBase
         if (string.IsNullOrEmpty(userId)) 
             return Unauthorized();
 
-        var cartItems = await _context.CartItems
-            .Where(c => c.UserId == userId)
-            .ToListAsync();
-
-        _context.CartItems.RemoveRange(cartItems);
-        await _context.SaveChangesAsync();
-
+        await _cartService.ClearCartAsync(userId);
         return Ok(new { message = "Cart cleared" });
     }
 }

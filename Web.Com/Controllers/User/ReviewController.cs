@@ -1,10 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Web.Com.Data;
 using Web.Com.DTOs.User;
-using Web.Com.Entities;
+using Web.Com.Services.Interfaces.Shared;
 
 namespace Web.Com.Controllers.User;
 
@@ -12,11 +10,11 @@ namespace Web.Com.Controllers.User;
 [Route("api/[controller]")]
 public class ReviewController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IReviewService _reviewService;
 
-    public ReviewController(AppDbContext context)
+    public ReviewController(IReviewService reviewService)
     {
-        _context = context;
+        _reviewService = reviewService;
     }
 
     [HttpPost]
@@ -24,32 +22,12 @@ public class ReviewController : ControllerBase
     public async Task<ActionResult> CreateReview([FromBody] CreateReviewDto dto)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        // Check if product exists
-        var product = await _context.Products.FindAsync(dto.ProductId);
-        if (product == null)
-            return NotFound(new { message = "Product not found" });
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
-        // Check if user already reviewed this product
-        var existingReview = await _context.Reviews
-            .FirstOrDefaultAsync(r => r.UserId == userId && r.ProductId == dto.ProductId);
-
-        if (existingReview != null)
-            return BadRequest(new { message = "You have already reviewed this product" });
-
-        var review = new Review
-        {
-            UserId = userId,
-            ProductId = dto.ProductId,
-            Rating = dto.Rating,
-            Comment = dto.Comment,
-            IsApproved = false // Requires admin approval
-        };
-
-        _context.Reviews.Add(review);
-        await _context.SaveChangesAsync();
+        var result = await _reviewService.AddReviewAsync(userId, dto);
+        if (!result) return BadRequest(new { message = "Could not submit review. Please check if product exists or if you've already reviewed it." });
 
         return Ok(new { message = "Review submitted successfully. It will appear after admin approval." });
     }

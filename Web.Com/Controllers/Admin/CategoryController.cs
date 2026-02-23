@@ -1,10 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Web.Com.Data;
 using Web.Com.DTOs.Admin;
-using Web.Com.Entities;
-using Web.Com.Helpers.Constants;
+using Web.Com.Services.Interfaces.Admin;
 
 namespace Web.Com.Controllers.Admin;
 
@@ -13,80 +10,49 @@ namespace Web.Com.Controllers.Admin;
 [Authorize(Policy = "AdminOnly")]
 public class CategoryController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ICategoryService _categoryService;
 
-    public CategoryController(AppDbContext context)
+    public CategoryController(ICategoryService categoryService)
     {
-        _context = context;
+        _categoryService = categoryService;
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetCategories()
+    public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetCategories()
     {
-        var categories = await _context.Categories
-            .Select(c => new
-            {
-                c.Id,
-                c.Name,
-                c.Description,
-                c.ImageUrl,
-                c.IsActive,
-                ProductCount = c.Products.Count
-            })
-            .ToListAsync();
-
+        var categories = await _categoryService.GetCategoriesAsync();
         return Ok(categories);
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateCategory([FromBody] CreateCategoryDto dto)
+    public async Task<ActionResult<CategoryResponseDto>> CreateCategory([FromBody] CreateCategoryDto dto)
     {
-        var category = new Category
-        {
-            Name = dto.Name,
-            Description = dto.Description,
-            ImageUrl = dto.ImageUrl
-        };
-
-        _context.Categories.Add(category);
-        await _context.SaveChangesAsync();
-
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var category = await _categoryService.CreateCategoryAsync(dto);
         return Ok(new { id = category.Id, message = "Category created successfully" });
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDto dto)
     {
-        var category = await _context.Categories.FindAsync(id);
-        if (category == null)
-            return NotFound(new { message = "Category not found" });
-
-        category.Name = dto.Name;
-        category.Description = dto.Description;
-        category.ImageUrl = dto.ImageUrl;
-        category.IsActive = dto.IsActive;
-
-        await _context.SaveChangesAsync();
-
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        var result = await _categoryService.UpdateCategoryAsync(id, dto);
+        if (!result) return NotFound(new { message = "Category not found" });
         return Ok(new { message = "Category updated successfully" });
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCategory(int id)
     {
-        var category = await _context.Categories
-            .Include(c => c.Products)
-            .FirstOrDefaultAsync(c => c.Id == id);
-
-        if (category == null)
-            return NotFound(new { message = "Category not found" });
-
-        if (category.Products.Any())
-            return BadRequest(new { message = "Cannot delete category with products. Remove products first." });
-
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Category deleted successfully" });
+        try
+        {
+            var result = await _categoryService.DeleteCategoryAsync(id);
+            if (!result) return NotFound(new { message = "Category not found" });
+            return Ok(new { message = "Category deleted successfully" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

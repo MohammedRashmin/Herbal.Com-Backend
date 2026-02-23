@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Web.Com.DTOs.Shared;
 using Web.Com.Entities.Identity;
 using Web.Com.Helpers;
-using Web.Com.Services.Shared;
+using Web.Com.Services.Interfaces.Shared;
 
 namespace Web.Com.Controllers.Shared;
 

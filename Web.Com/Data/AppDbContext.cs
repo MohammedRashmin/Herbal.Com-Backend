@@ -21,6 +21,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<OrderItem> OrderItems { get; set; }
     public DbSet<Review> Reviews { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<WishlistItem> WishlistItems { get; set; }
+    public DbSet<Coupon> Coupons { get; set; }
+    public DbSet<Address> Addresses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

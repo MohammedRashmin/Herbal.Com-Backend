@@ -8,15 +8,19 @@ using System.Text;
 using Web.Com.Data;
 using Web.Com.Helpers;
 using Web.Com.Entities.Identity;
-using Web.Com.Repositories.Implementations.Shared;
 using Web.Com.Repositories.Interfaces.Shared;
-using Web.Com.Services.Shared;
+using Web.Com.Repositories.Implementations.Shared;
+using Web.Com.Services.Interfaces.Shared;
+using Web.Com.Services.Implementations.Shared;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Repositories.Implementations.Admin;
-using Web.Com.Services.Admin;
+using Web.Com.Services.Interfaces.Admin;
+using Web.Com.Services.Implementations.Admin;
 using Web.Com.Repositories.Interfaces.User;
 using Web.Com.Repositories.Implementations.User;
-using Web.Com.Services.User;
+using Web.Com.Services.Interfaces.User;
+using Web.Com.Services.Implementations.User;
+using Web.Com.Hubs;
 
 // Keep JWT claims with original names (role, email, etc.) - don't map to long URIs
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
@@ -25,6 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -124,17 +129,36 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Register custom services (Dependency Injection)
+// Register Shared Folders
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IBannerRepository, BannerRepository>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IBannerService, BannerService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 
-// Register Product Services
+// Register Admin Folders
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICouponRepository, CouponRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICouponService, CouponService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
-// Register Cart Services
+// Register User Folders
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IWishlistService, WishlistService>();
+builder.Services.AddScoped<IAddressService, AddressService>();
 
 var app = builder.Build();
 
@@ -157,5 +181,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();

@@ -1,6 +1,6 @@
 using Web.Com.DTOs.Shared;
 
-namespace Web.Com.Services.Shared;
+namespace Web.Com.Services.Interfaces.Shared;
 
 public interface IAuthService
 {

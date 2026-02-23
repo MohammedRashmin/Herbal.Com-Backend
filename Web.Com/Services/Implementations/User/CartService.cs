@@ -2,8 +2,9 @@ using Web.Com.DTOs.User;
 using Web.Com.Entities;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Repositories.Interfaces.User;
+using Web.Com.Services.Interfaces.User;
 
-namespace Web.Com.Services.User;
+namespace Web.Com.Services.Implementations.User;
 
 public class CartService : ICartService
 {
@@ -50,6 +51,25 @@ public class CartService : ICartService
     public async Task RemoveFromCartAsync(int cartItemId)
     {
         await _cartRepository.RemoveCartItemAsync(cartItemId);
+    }
+
+    public async Task UpdateCartItemAsync(int cartItemId, UpdateCartItemDto dto)
+    {
+        var cartItem = await _cartRepository.GetByIdAsync(cartItemId);
+        if (cartItem == null) throw new KeyNotFoundException("Cart item not found");
+
+        if (dto.Quantity <= 0)
+        {
+            await _cartRepository.RemoveCartItemAsync(cartItemId);
+        }
+        else
+        {
+            if (dto.Quantity > cartItem.Product.Stock)
+                throw new InvalidOperationException("Quantity exceeds available stock");
+
+            cartItem.Quantity = dto.Quantity;
+            await _cartRepository.UpdateCartItemAsync(cartItem);
+        }
     }
 
     public async Task ClearCartAsync(string userId)

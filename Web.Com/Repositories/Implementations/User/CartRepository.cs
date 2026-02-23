@@ -51,6 +51,13 @@ public class CartRepository : ICartRepository
         }
     }
 
+    public async Task<CartItem?> GetByIdAsync(int id)
+    {
+        return await _context.CartItems
+            .Include(c => c.Product)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
+
     public async Task ClearCartAsync(string userId)
     {
         var items = await _context.CartItems.Where(c => c.UserId == userId).ToListAsync();

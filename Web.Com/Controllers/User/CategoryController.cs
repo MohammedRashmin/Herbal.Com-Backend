@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Web.Com.Data;
 using Web.Com.DTOs.User;
+using Web.Com.Services.Interfaces.Admin;
 
 namespace Web.Com.Controllers.User;
 
@@ -9,27 +8,17 @@ namespace Web.Com.Controllers.User;
 [Route("api/[controller]")]
 public class CategoryController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly ICategoryService _categoryService;
 
-    public CategoryController(AppDbContext context)
+    public CategoryController(ICategoryService categoryService)
     {
-        _context = context;
+        _categoryService = categoryService;
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
+    public async Task<ActionResult<IEnumerable<CategoryResponseDto>>> GetCategories()
     {
-        var categories = await _context.Categories
-            .Where(c => c.IsActive)
-            .Select(c => new CategoryDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description,
-                ImageUrl = c.ImageUrl
-            })
-            .ToListAsync();
-
-        return Ok(categories);
+        var categories = await _categoryService.GetCategoriesAsync();
+        return Ok(categories.Where(c => c.IsActive));
     }
 }

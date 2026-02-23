@@ -2,8 +2,9 @@ using Web.Com.DTOs.Shared;
 using Web.Com.Entities.Identity;
 using Web.Com.Helpers;
 using Web.Com.Repositories.Interfaces.Shared;
+using Web.Com.Services.Interfaces.Shared;
 
-namespace Web.Com.Services.Shared;
+namespace Web.Com.Services.Implementations.Shared;
 
 public class AuthService : IAuthService
 {
@@ -40,7 +41,6 @@ public class AuthService : IAuthService
         var roles = await _userRepository.GetUserRolesAsync(user);
         var token = _jwtTokenGenerator.GenerateToken(user, roles);
 
-        // Generate and save refresh token
         var refreshToken = Guid.NewGuid().ToString();
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
@@ -61,7 +61,7 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponseDto> SignupAsync(SignupRequestDto request)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || 
+        if (string.IsNullOrWhiteSpace(request.Email) ||
             string.IsNullOrWhiteSpace(request.FirstName) ||
             string.IsNullOrWhiteSpace(request.LastName) ||
             string.IsNullOrWhiteSpace(request.Password))
@@ -94,7 +94,6 @@ public class AuthService : IAuthService
         var roles = await _userRepository.GetUserRolesAsync(user);
         var token = _jwtTokenGenerator.GenerateToken(user, roles);
 
-        // Generate and save refresh token
         var refreshToken = Guid.NewGuid().ToString();
         user.RefreshToken = refreshToken;
         user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
