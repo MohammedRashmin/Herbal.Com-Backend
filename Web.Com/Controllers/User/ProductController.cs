@@ -17,7 +17,7 @@ public class ProductController : ControllerBase
 
   [HttpGet]
   public async Task<ActionResult<IEnumerable<ProductListDto>>> GetProducts(
-    [FromQuery] int? categoryId,
+    [FromQuery] Guid? categoryId,
     [FromQuery] bool? isFeatured,
     [FromQuery] string? keyword,
     [FromQuery] string? sortBy,
@@ -37,7 +37,7 @@ public class ProductController : ControllerBase
   }
 
   [HttpGet("{id}")]
-  public async Task<ActionResult<ProductDetailDto>> GetProduct(int id)
+  public async Task<ActionResult<ProductDetailDto>> GetProduct(Guid id)
   {
     var product = await _productService.GetProductDetailAsync(id);
     if (product == null)

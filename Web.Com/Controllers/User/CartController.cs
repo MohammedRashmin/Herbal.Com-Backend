@@ -74,7 +74,7 @@ public class CartController : ControllerBase
     }
 
     [HttpDelete("remove/{itemId}")]
-    public async Task<ActionResult> RemoveFromCart(int itemId)
+    public async Task<ActionResult> RemoveFromCart(Guid itemId)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) 

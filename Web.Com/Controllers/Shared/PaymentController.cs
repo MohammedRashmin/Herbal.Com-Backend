@@ -129,7 +129,7 @@ public class PaymentController : ControllerBase
     /// For Cash on Delivery orders - confirms the order without payment
     /// </summary>
     [HttpPost("cod")]
-    public async Task<ActionResult<PaymentResultDto>> ConfirmCODOrder([FromQuery] int orderId)
+    public async Task<ActionResult<PaymentResultDto>> ConfirmCODOrder([FromQuery] Guid orderId)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))

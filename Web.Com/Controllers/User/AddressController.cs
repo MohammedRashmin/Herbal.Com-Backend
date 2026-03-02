@@ -44,7 +44,7 @@ public class AddressController : ControllerBase
 
     // PUT /api/address/{id}
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateAddress(int id, [FromBody] UpdateAddressDto dto)
+    public async Task<ActionResult> UpdateAddress(Guid id, [FromBody] UpdateAddressDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -59,7 +59,7 @@ public class AddressController : ControllerBase
 
     // DELETE /api/address/{id}
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAddress(int id)
+    public async Task<ActionResult> DeleteAddress(Guid id)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
@@ -72,7 +72,7 @@ public class AddressController : ControllerBase
 
     // PATCH /api/address/{id}/set-default
     [HttpPatch("{id}/set-default")]
-    public async Task<ActionResult> SetDefault(int id)
+    public async Task<ActionResult> SetDefault(Guid id)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();

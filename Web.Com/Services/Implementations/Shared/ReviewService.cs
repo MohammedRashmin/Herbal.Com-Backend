@@ -14,7 +14,7 @@ public class ReviewService : IReviewService
         _reviewRepository = reviewRepository;
     }
 
-    public async Task<IEnumerable<ReviewDto>> GetProductReviewsAsync(int productId)
+    public async Task<IEnumerable<ReviewDto>> GetProductReviewsAsync(Guid productId)
     {
         var reviews = await _reviewRepository.GetByProductIdAsync(productId);
         return reviews.Select(r => new ReviewDto
@@ -42,7 +42,7 @@ public class ReviewService : IReviewService
         return true;
     }
 
-    public async Task<bool> ApproveReviewAsync(int reviewId)
+    public async Task<bool> ApproveReviewAsync(Guid reviewId)
     {
         var review = await _reviewRepository.GetByIdAsync(reviewId);
         if (review == null) return false;
@@ -52,7 +52,7 @@ public class ReviewService : IReviewService
         return true;
     }
 
-    public async Task<bool> DeleteReviewAsync(int reviewId)
+    public async Task<bool> DeleteReviewAsync(Guid reviewId)
     {
         var review = await _reviewRepository.GetByIdAsync(reviewId);
         if (review == null) return false;

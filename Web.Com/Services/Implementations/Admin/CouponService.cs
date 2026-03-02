@@ -32,7 +32,7 @@ public class CouponService : ICouponService
         }).ToList();
     }
 
-    public async Task<CouponResponseDto?> GetCouponByIdAsync(int id)
+    public async Task<CouponResponseDto?> GetCouponByIdAsync(Guid id)
     {
         var c = await _couponRepository.GetByIdAsync(id);
         if (c == null) return null;
@@ -82,7 +82,7 @@ public class CouponService : ICouponService
         };
     }
 
-    public async Task<bool> UpdateCouponAsync(int id, UpdateCouponDto dto)
+    public async Task<bool> UpdateCouponAsync(Guid id, UpdateCouponDto dto)
     {
         var coupon = await _couponRepository.GetByIdAsync(id);
         if (coupon == null) return false;
@@ -98,7 +98,7 @@ public class CouponService : ICouponService
         return true;
     }
 
-    public async Task<bool> DeleteCouponAsync(int id)
+    public async Task<bool> DeleteCouponAsync(Guid id)
     {
         var coupon = await _couponRepository.GetByIdAsync(id);
         if (coupon == null) return false;

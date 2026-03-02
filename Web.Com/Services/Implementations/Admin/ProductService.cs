@@ -35,17 +35,20 @@ public class ProductService : IProductService
       DiscountPrice = dto.DiscountPrice,
       Stock = dto.Stock,
       Weight = dto.Weight,
+      BatchNumber = dto.BatchNumber,
       Ingredients = dto.Ingredients,
       CategoryId = dto.CategoryId,
       IsMemberOnly = dto.IsMemberOnly,
       IsFeatured = dto.IsFeatured,
+      Sku = dto.Sku,
+      ExpiryDate = dto.ExpiryDate,
     };
 
     var createdProduct = await _productRepository.CreateAsync(product);
     return MapToDto(createdProduct);
   }
 
-  public async Task<bool> UpdateProductAsync(int id, UpdateProductDto dto)
+  public async Task<bool> UpdateProductAsync(Guid id, UpdateProductDto dto)
   {
     var product = await _productRepository.GetByIdAsync(id);
     if (product == null)
@@ -58,16 +61,19 @@ public class ProductService : IProductService
     product.DiscountPrice = dto.DiscountPrice;
     product.Stock = dto.Stock;
     product.Weight = dto.Weight;
+    product.BatchNumber = dto.BatchNumber;
     product.Ingredients = dto.Ingredients;
     product.CategoryId = dto.CategoryId;
     product.IsMemberOnly = dto.IsMemberOnly;
     product.IsFeatured = dto.IsFeatured;
+    product.Sku = dto.Sku;
+    product.ExpiryDate = dto.ExpiryDate;
 
     await _productRepository.UpdateAsync(product);
     return true;
   }
 
-  public async Task<bool> DeleteProductAsync(int id)
+  public async Task<bool> DeleteProductAsync(Guid id)
   {
     var product = await _productRepository.GetByIdAsync(id);
     if (product == null)
@@ -89,7 +95,7 @@ public class ProductService : IProductService
     return true;
   }
 
-  public async Task<ProductDto> AddProductImageAsync(int productId, IFormFile imageFile)
+  public async Task<ProductDto> AddProductImageAsync(Guid productId, IFormFile imageFile)
   {
     var product = await _productRepository.GetByIdAsync(productId);
     if (product == null)
@@ -125,7 +131,7 @@ public class ProductService : IProductService
     return MapToDto(updatedProduct!);
   }
 
-  public async Task<bool> RemoveProductImageAsync(int productId, int imageId)
+  public async Task<bool> RemoveProductImageAsync(Guid productId, Guid imageId)
   {
     var image = await _productRepository.GetImageByIdAsync(imageId);
     if (image == null || image.ProductId != productId)
@@ -145,7 +151,7 @@ public class ProductService : IProductService
 
   // User Methods
   public async Task<IEnumerable<ProductListDto>> GetProductsUserAsync(
-    int? categoryId,
+    Guid? categoryId,
     bool? isFeatured,
     string? keyword,
     string? sortBy,
@@ -157,7 +163,7 @@ public class ProductService : IProductService
     var query = products.Where(p => p.Stock > 0);
 
     if (categoryId.HasValue)
-      query = query.Where(p => p.CategoryId == categoryId.Value);
+      query = query.Where(p => p.CategoryId == categoryId);
     if (isFeatured.HasValue)
       query = query.Where(p => p.IsFeatured == isFeatured.Value);
     if (!string.IsNullOrWhiteSpace(keyword))
@@ -194,10 +200,12 @@ public class ProductService : IProductService
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
+        Sku = p.Sku,
+        ExpiryDate = p.ExpiryDate,
       });
   }
 
-  public async Task<ProductDetailDto?> GetProductDetailAsync(int id)
+  public async Task<ProductDetailDto?> GetProductDetailAsync(Guid id)
   {
     var p = await _productRepository.GetByIdAsync(id);
     if (p == null)
@@ -219,6 +227,8 @@ public class ProductService : IProductService
       CategoryName = p.Category?.Name ?? "Uncategorized",
       IsFeatured = p.IsFeatured,
       IsMemberOnly = p.IsMemberOnly,
+      Sku = p.Sku,
+      ExpiryDate = p.ExpiryDate,
       ImageUrls = p.Images.Select(i => i.ImageUrl).ToList(),
       Reviews =
         p.Reviews?.Where(r => r.IsApproved)
@@ -270,11 +280,14 @@ public class ProductService : IProductService
       DiscountPrice = p.DiscountPrice,
       Stock = p.Stock,
       Weight = p.Weight,
+      BatchNumber = p.BatchNumber,
       Ingredients = p.Ingredients,
       CategoryId = p.CategoryId,
       CategoryName = p.Category?.Name ?? "Uncategorized",
       IsFeatured = p.IsFeatured,
       IsMemberOnly = p.IsMemberOnly,
+      Sku = p.Sku,
+      ExpiryDate = p.ExpiryDate,
       ImageUrls = p.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
     };
   }

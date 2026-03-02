@@ -12,6 +12,10 @@ public class CreateCategoryDto
     public string Description { get; set; } = string.Empty;
 
     public string? ImageUrl { get; set; }
+
+    public int DisplayOrder { get; set; } = 0;
+
+    public bool IsActive { get; set; } = true;
 }
 
 public class UpdateCategoryDto
@@ -24,6 +28,8 @@ public class UpdateCategoryDto
     public string Description { get; set; } = string.Empty;
 
     public string? ImageUrl { get; set; }
-    
+
+    public int DisplayOrder { get; set; } = 0;
+
     public bool IsActive { get; set; } = true;
 }

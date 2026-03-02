@@ -27,7 +27,7 @@ public class CouponController : ControllerBase
 
     // GET /api/admin/coupon/{id}
     [HttpGet("{id}")]
-    public async Task<ActionResult<CouponResponseDto>> GetCoupon(int id)
+    public async Task<ActionResult<CouponResponseDto>> GetCoupon(Guid id)
     {
         var coupon = await _couponService.GetCouponByIdAsync(id);
         if (coupon == null)
@@ -49,7 +49,7 @@ public class CouponController : ControllerBase
 
     // PUT /api/admin/coupon/{id}
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateCoupon(int id, [FromBody] UpdateCouponDto dto)
+    public async Task<ActionResult> UpdateCoupon(Guid id, [FromBody] UpdateCouponDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -63,7 +63,7 @@ public class CouponController : ControllerBase
 
     // DELETE /api/admin/coupon/{id}
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteCoupon(int id)
+    public async Task<ActionResult> DeleteCoupon(Guid id)
     {
         var result = await _couponService.DeleteCouponAsync(id);
         if (!result)

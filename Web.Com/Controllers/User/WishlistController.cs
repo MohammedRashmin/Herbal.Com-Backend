@@ -30,7 +30,7 @@ public class WishlistController : ControllerBase
     }
 
     [HttpPost("{productId}")]
-    public async Task<ActionResult> AddToWishlist(int productId)
+    public async Task<ActionResult> AddToWishlist(Guid productId)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
@@ -45,7 +45,7 @@ public class WishlistController : ControllerBase
     }
 
     [HttpDelete("{productId}")]
-    public async Task<ActionResult> RemoveFromWishlist(int productId)
+    public async Task<ActionResult> RemoveFromWishlist(Guid productId)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
@@ -60,7 +60,7 @@ public class WishlistController : ControllerBase
     }
 
     [HttpGet("check/{productId}")]
-    public async Task<ActionResult<bool>> IsInWishlist(int productId)
+    public async Task<ActionResult<bool>> IsInWishlist(Guid productId)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))

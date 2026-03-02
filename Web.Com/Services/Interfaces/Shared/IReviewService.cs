@@ -4,8 +4,8 @@ namespace Web.Com.Services.Interfaces.Shared;
 
 public interface IReviewService
 {
-    Task<IEnumerable<ReviewDto>> GetProductReviewsAsync(int productId);
+    Task<IEnumerable<ReviewDto>> GetProductReviewsAsync(Guid productId);
     Task<bool> AddReviewAsync(string userId, CreateReviewDto dto);
-    Task<bool> ApproveReviewAsync(int reviewId);
-    Task<bool> DeleteReviewAsync(int reviewId);
+    Task<bool> ApproveReviewAsync(Guid reviewId);
+    Task<bool> DeleteReviewAsync(Guid reviewId);
 }

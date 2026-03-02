@@ -6,29 +6,29 @@ namespace Web.Com.Entities;
 
 public class Review
 {
-    [Key]
-    public int Id { get; set; }
+  [Key]
+  public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Required]
-    public string UserId { get; set; } = string.Empty;
+  [Required]
+  public string UserId { get; set; } = string.Empty;
 
-    [ForeignKey("UserId")]
-    public ApplicationUser User { get; set; } = null!;
+  [ForeignKey("UserId")]
+  public ApplicationUser User { get; set; } = null!;
 
-    [Required]
-    public int ProductId { get; set; }
+  [Required]
+  public Guid ProductId { get; set; }
 
-    [ForeignKey("ProductId")]
-    public Product Product { get; set; } = null!;
+  [ForeignKey("ProductId")]
+  public Product Product { get; set; } = null!;
 
-    [Required]
-    [Range(1, 5)]
-    public int Rating { get; set; }
+  [Required]
+  [Range(1, 5)]
+  public int Rating { get; set; }
 
-    [MaxLength(1000)]
-    public string Comment { get; set; } = string.Empty;
+  [MaxLength(1000)]
+  public string Comment { get; set; } = string.Empty;
 
-    public bool IsApproved { get; set; } = false;
+  public bool IsApproved { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -24,6 +24,14 @@ public class CategoryController : ControllerBase
         return Ok(categories);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<CategoryResponseDto>> GetCategory(Guid id)
+    {
+        var category = await _categoryService.GetCategoryByIdAsync(id);
+        if (category == null) return NotFound(new { message = "Category not found" });
+        return Ok(category);
+    }
+
     [HttpPost]
     public async Task<ActionResult<CategoryResponseDto>> CreateCategory([FromBody] CreateCategoryDto dto)
     {
@@ -33,7 +41,7 @@ public class CategoryController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDto dto)
+    public async Task<ActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var result = await _categoryService.UpdateCategoryAsync(id, dto);
@@ -42,7 +50,7 @@ public class CategoryController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteCategory(int id)
+    public async Task<ActionResult> DeleteCategory(Guid id)
     {
         try
         {

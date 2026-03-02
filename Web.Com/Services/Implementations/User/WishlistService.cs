@@ -33,7 +33,7 @@ public class WishlistService : IWishlistService
         }).ToList();
     }
 
-    public async Task<bool> AddToWishlistAsync(string userId, int productId)
+    public async Task<bool> AddToWishlistAsync(string userId, Guid productId)
     {
         var product = await _productRepository.GetByIdAsync(productId);
         if (product == null) return false;
@@ -45,7 +45,7 @@ public class WishlistService : IWishlistService
         return true;
     }
 
-    public async Task<bool> RemoveFromWishlistAsync(string userId, int productId)
+    public async Task<bool> RemoveFromWishlistAsync(string userId, Guid productId)
     {
         var item = await _wishlistRepository.GetAsync(userId, productId);
         if (item == null) return false;
@@ -54,7 +54,7 @@ public class WishlistService : IWishlistService
         return true;
     }
 
-    public async Task<bool> IsInWishlistAsync(string userId, int productId)
+    public async Task<bool> IsInWishlistAsync(string userId, Guid productId)
     {
         return await _wishlistRepository.ExistsAsync(userId, productId);
     }

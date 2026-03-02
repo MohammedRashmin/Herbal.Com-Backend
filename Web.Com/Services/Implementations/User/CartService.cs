@@ -48,12 +48,12 @@ public class CartService : ICartService
         return MapToDto(cartItem);
     }
 
-    public async Task RemoveFromCartAsync(int cartItemId)
+    public async Task RemoveFromCartAsync(Guid cartItemId)
     {
         await _cartRepository.RemoveCartItemAsync(cartItemId);
     }
 
-    public async Task UpdateCartItemAsync(int cartItemId, UpdateCartItemDto dto)
+    public async Task UpdateCartItemAsync(Guid cartItemId, UpdateCartItemDto dto)
     {
         var cartItem = await _cartRepository.GetByIdAsync(cartItemId);
         if (cartItem == null) throw new KeyNotFoundException("Cart item not found");

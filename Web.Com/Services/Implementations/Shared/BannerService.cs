@@ -58,7 +58,7 @@ public class BannerService : IBannerService
         return MapToResponseDto(banner);
     }
 
-    public async Task<bool> UpdateBannerAsync(int id, UpdateBannerDto dto)
+    public async Task<bool> UpdateBannerAsync(Guid id, UpdateBannerDto dto)
     {
         var banner = await _bannerRepository.GetByIdAsync(id);
         if (banner == null) return false;
@@ -79,7 +79,7 @@ public class BannerService : IBannerService
         return true;
     }
 
-    public async Task<bool> DeleteBannerAsync(int id)
+    public async Task<bool> DeleteBannerAsync(Guid id)
     {
         var banner = await _bannerRepository.GetByIdAsync(id);
         if (banner == null) return false;

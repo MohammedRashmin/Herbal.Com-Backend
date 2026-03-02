@@ -8,8 +8,8 @@ public interface IBannerService
     // Admin
     Task<IEnumerable<BannerResponseDto>> GetAllBannersAsync();
     Task<BannerResponseDto> CreateBannerAsync(CreateBannerDto dto);
-    Task<bool> UpdateBannerAsync(int id, UpdateBannerDto dto);
-    Task<bool> DeleteBannerAsync(int id);
+    Task<bool> UpdateBannerAsync(Guid id, UpdateBannerDto dto);
+    Task<bool> DeleteBannerAsync(Guid id);
 
     // User
     Task<IEnumerable<BannerDto>> GetActiveBannersAsync();
@@ -17,13 +17,13 @@ public interface IBannerService
 
 public class BannerResponseDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Subtitle { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public string? Tag { get; set; }
-    public int? ProductId { get; set; }
-    public int? CategoryId { get; set; }
+    public Guid? ProductId { get; set; }
+    public Guid? CategoryId { get; set; }
     public string? ExternalUrl { get; set; }
     public bool IsMemberOnly { get; set; }
     public DateTime? EndDate { get; set; }

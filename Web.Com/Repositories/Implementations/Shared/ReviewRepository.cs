@@ -14,14 +14,14 @@ public class ReviewRepository : IReviewRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Review>> GetByProductIdAsync(int productId, bool approvedOnly = true)
+    public async Task<IEnumerable<Review>> GetByProductIdAsync(Guid productId, bool approvedOnly = true)
     {
         var query = _context.Reviews.Include(r => r.User).Where(r => r.ProductId == productId);
         if (approvedOnly) query = query.Where(r => r.IsApproved);
         return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
     }
 
-    public async Task<Review?> GetByIdAsync(int id)
+    public async Task<Review?> GetByIdAsync(Guid id)
     {
         return await _context.Reviews.FindAsync(id);
     }

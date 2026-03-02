@@ -5,25 +5,25 @@ namespace Web.Com.Entities;
 
 public class OrderItem
 {
-    [Key]
-    public int Id { get; set; }
+  [Key]
+  public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Required]
-    public int OrderId { get; set; }
+  [Required]
+  public Guid OrderId { get; set; }
 
-    [ForeignKey("OrderId")]
-    public Order Order { get; set; } = null!;
+  [ForeignKey("OrderId")]
+  public Order Order { get; set; } = null!;
 
-    [Required]
-    public int ProductId { get; set; }
+  [Required]
+  public Guid ProductId { get; set; }
 
-    [ForeignKey("ProductId")]
-    public Product Product { get; set; } = null!;
+  [ForeignKey("ProductId")]
+  public Product Product { get; set; } = null!;
 
-    [Required]
-    public int Quantity { get; set; }
+  [Required]
+  public int Quantity { get; set; }
 
-    [Required]
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal PriceAtPurchase { get; set; }
+  [Required]
+  [Column(TypeName = "decimal(18,2)")]
+  public decimal PriceAtPurchase { get; set; }
 }

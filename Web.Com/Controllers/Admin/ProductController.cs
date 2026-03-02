@@ -33,7 +33,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto dto)
+    public async Task<ActionResult> UpdateProduct(Guid id, [FromBody] UpdateProductDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var result = await _productService.UpdateProductAsync(id, dto);
@@ -42,7 +42,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteProduct(int id)
+    public async Task<ActionResult> DeleteProduct(Guid id)
     {
         var result = await _productService.DeleteProductAsync(id);
         if (!result) return NotFound(new { message = "Product not found" });
@@ -50,7 +50,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("{id}/upload-image")]
-    public async Task<ActionResult> UploadImage(int id, IFormFile file)
+    public async Task<ActionResult> UploadImage(Guid id, IFormFile file)
     {
         try
         {
@@ -68,7 +68,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete("{id}/remove-image/{imageId}")]
-    public async Task<ActionResult> RemoveImage(int id, int imageId)
+    public async Task<ActionResult> RemoveImage(Guid id, Guid imageId)
     {
         var result = await _productService.RemoveProductImageAsync(id, imageId);
         if (!result) return NotFound(new { message = "Image not found or not associated with this product" });

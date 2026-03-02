@@ -24,7 +24,7 @@ public class WishlistRepository : IWishlistRepository
             .ToListAsync();
     }
 
-    public async Task<WishlistItem?> GetAsync(string userId, int productId)
+    public async Task<WishlistItem?> GetAsync(string userId, Guid productId)
     {
         return await _context.WishlistItems
             .FirstOrDefaultAsync(w => w.UserId == userId && w.ProductId == productId);
@@ -42,7 +42,7 @@ public class WishlistRepository : IWishlistRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> ExistsAsync(string userId, int productId)
+    public async Task<bool> ExistsAsync(string userId, Guid productId)
     {
         return await _context.WishlistItems
             .AnyAsync(w => w.UserId == userId && w.ProductId == productId);

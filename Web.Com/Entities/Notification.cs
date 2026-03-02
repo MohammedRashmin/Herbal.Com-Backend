@@ -7,7 +7,7 @@ namespace Web.Com.Entities;
 public class Notification
 {
     [Key]
-    public int Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     [Required]
     public string UserId { get; set; } = string.Empty;

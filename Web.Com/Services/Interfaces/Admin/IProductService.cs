@@ -7,21 +7,21 @@ public interface IProductService
 {
   // Admin
   Task<ProductDto> CreateProductAsync(CreateProductDto dto);
-  Task<bool> UpdateProductAsync(int id, UpdateProductDto dto);
-  Task<bool> DeleteProductAsync(int id);
-  Task<ProductDto> AddProductImageAsync(int productId, IFormFile imageFile);
-  Task<bool> RemoveProductImageAsync(int productId, int imageId);
+  Task<bool> UpdateProductAsync(Guid id, UpdateProductDto dto);
+  Task<bool> DeleteProductAsync(Guid id);
+  Task<ProductDto> AddProductImageAsync(Guid productId, IFormFile imageFile);
+  Task<bool> RemoveProductImageAsync(Guid productId, Guid imageId);
   Task<IEnumerable<ProductDto>> GetAllProductsAdminAsync();
 
   // User
   Task<IEnumerable<ProductListDto>> GetProductsUserAsync(
-    int? categoryId,
+    Guid? categoryId,
     bool? isFeatured,
     string? keyword,
     string? sortBy,
     int page,
     int pageSize
   );
-  Task<ProductDetailDto?> GetProductDetailAsync(int id);
+  Task<ProductDetailDto?> GetProductDetailAsync(Guid id);
   Task<IEnumerable<ProductListDto>> GetSuggestionsAsync();
 }

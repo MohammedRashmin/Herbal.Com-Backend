@@ -29,7 +29,7 @@ public class BannerRepository : IBannerRepository
             .ToListAsync();
     }
 
-    public async Task<Banner?> GetByIdAsync(int id)
+    public async Task<Banner?> GetByIdAsync(Guid id)
     {
         return await _context.Banners.FindAsync(id);
     }

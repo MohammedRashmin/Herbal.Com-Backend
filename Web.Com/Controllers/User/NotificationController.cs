@@ -28,7 +28,7 @@ public class NotificationController : ControllerBase
     }
 
     [HttpPut("{id}/read")]
-    public async Task<ActionResult> MarkAsRead(int id)
+    public async Task<ActionResult> MarkAsRead(Guid id)
     {
         var result = await _notificationService.MarkAsReadAsync(id);
         if (!result) return NotFound();

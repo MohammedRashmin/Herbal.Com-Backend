@@ -26,7 +26,7 @@ public class NotificationService : INotificationService
         });
     }
 
-    public async Task<bool> MarkAsReadAsync(int notificationId)
+    public async Task<bool> MarkAsReadAsync(Guid notificationId)
     {
         var n = await _notificationRepository.GetByIdAsync(notificationId);
         if (n == null) return false;
@@ -36,7 +36,7 @@ public class NotificationService : INotificationService
         return true;
     }
 
-    public async Task<bool> DeleteNotificationAsync(int notificationId)
+    public async Task<bool> DeleteNotificationAsync(Guid notificationId)
     {
         var n = await _notificationRepository.GetByIdAsync(notificationId);
         if (n == null) return false;

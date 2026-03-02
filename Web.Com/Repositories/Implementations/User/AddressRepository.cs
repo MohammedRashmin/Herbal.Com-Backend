@@ -23,7 +23,7 @@ public class AddressRepository : IAddressRepository
             .ToListAsync();
     }
 
-    public async Task<Address?> GetByIdAsync(int id, string userId)
+    public async Task<Address?> GetByIdAsync(Guid id, string userId)
     {
         return await _context.Addresses
             .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);

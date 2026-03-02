@@ -25,7 +25,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpPut("{id}/status")]
-    public async Task<ActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
+    public async Task<ActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         try

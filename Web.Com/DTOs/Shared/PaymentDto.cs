@@ -2,7 +2,7 @@ namespace Web.Com.DTOs.Shared;
 
 public class CreatePayPalOrderDto
 {
-    public int OrderId { get; set; }
+    public Guid OrderId { get; set; }
 }
 
 public class PayPalOrderResponseDto
@@ -20,5 +20,5 @@ public class PaymentResultDto
 {
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
-    public int? OrderId { get; set; }
+    public Guid? OrderId { get; set; }
 }

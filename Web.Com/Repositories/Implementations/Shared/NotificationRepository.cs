@@ -22,7 +22,7 @@ public class NotificationRepository : INotificationRepository
             .ToListAsync();
     }
 
-    public async Task<Notification?> GetByIdAsync(int id)
+    public async Task<Notification?> GetByIdAsync(Guid id)
     {
         return await _context.Notifications.FindAsync(id);
     }

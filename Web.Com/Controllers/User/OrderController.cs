@@ -46,7 +46,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<OrderDto>> GetOrder(int id)
+    public async Task<ActionResult<OrderDto>> GetOrder(Guid id)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();

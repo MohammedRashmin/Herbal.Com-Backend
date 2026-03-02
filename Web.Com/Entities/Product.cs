@@ -5,51 +5,59 @@ namespace Web.Com.Entities;
 
 public class Product
 {
-    [Key]
-    public int Id { get; set; }
+  [Key]
+  public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Required]
-    [MaxLength(200)]
-    public string Name { get; set; } = string.Empty;
+  [Required]
+  [MaxLength(200)]
+  public string Name { get; set; } = string.Empty;
 
-    [MaxLength(500)]
-    public string ShortDescription { get; set; } = string.Empty;
+  [MaxLength(500)]
+  public string ShortDescription { get; set; } = string.Empty;
 
-    [MaxLength(2000)]
-    public string Description { get; set; } = string.Empty;
+  [MaxLength(2000)]
+  public string Description { get; set; } = string.Empty;
 
-    [Required]
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal Price { get; set; }
+  [Required]
+  [Column(TypeName = "decimal(18,2)")]
+  public decimal Price { get; set; }
 
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal? DiscountPrice { get; set; }
+  [Column(TypeName = "decimal(18,2)")]
+  public decimal? DiscountPrice { get; set; }
 
-    [Required]
-    public int Stock { get; set; }
+  [Required]
+  public int Stock { get; set; }
 
-    [MaxLength(50)]
-    public string? Weight { get; set; }
+  [MaxLength(50)]
+  public string? Weight { get; set; }
 
-    [MaxLength(1000)]
-    public string? Ingredients { get; set; }
+  [MaxLength(100)]
+  public string? BatchNumber { get; set; }
 
-    [Column(TypeName = "decimal(3,2)")]
-    public decimal AverageRating { get; set; } = 0;
+  [MaxLength(1000)]
+  public string? Ingredients { get; set; }
 
-    [Required]
-    public int CategoryId { get; set; }
+  [Column(TypeName = "decimal(3,2)")]
+  public decimal AverageRating { get; set; } = 0;
 
-    [ForeignKey("CategoryId")]
-    public Category Category { get; set; } = null!;
+  [Required]
+  public Guid CategoryId { get; set; }
 
-    public bool IsMemberOnly { get; set; } = false;
+  [ForeignKey("CategoryId")]
+  public Category Category { get; set; } = null!;
 
-    public bool IsFeatured { get; set; } = false;
+  [MaxLength(100)]
+  public string? Sku { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+  public DateTime? ExpiryDate { get; set; }
 
-    // Relationships
-    public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
-    public ICollection<Review> Reviews { get; set; } = new List<Review>();
+  public bool IsMemberOnly { get; set; } = false;
+
+  public bool IsFeatured { get; set; } = false;
+
+  public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+  // Relationships
+  public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+  public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

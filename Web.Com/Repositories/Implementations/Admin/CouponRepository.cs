@@ -21,7 +21,7 @@ public class CouponRepository : ICouponRepository
             .ToListAsync();
     }
 
-    public async Task<Coupon?> GetByIdAsync(int id)
+    public async Task<Coupon?> GetByIdAsync(Guid id)
     {
         return await _context.Coupons.FindAsync(id);
     }

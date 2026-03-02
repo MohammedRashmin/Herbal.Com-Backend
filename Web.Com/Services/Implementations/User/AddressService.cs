@@ -69,7 +69,7 @@ public class AddressService : IAddressService
         };
     }
 
-    public async Task<bool> UpdateAddressAsync(string userId, int id, UpdateAddressDto dto)
+    public async Task<bool> UpdateAddressAsync(string userId, Guid id, UpdateAddressDto dto)
     {
         var address = await _addressRepository.GetByIdAsync(id, userId);
         if (address == null) return false;
@@ -98,7 +98,7 @@ public class AddressService : IAddressService
         return true;
     }
 
-    public async Task<bool> DeleteAddressAsync(string userId, int id)
+    public async Task<bool> DeleteAddressAsync(string userId, Guid id)
     {
         var address = await _addressRepository.GetByIdAsync(id, userId);
         if (address == null) return false;
@@ -118,7 +118,7 @@ public class AddressService : IAddressService
         return true;
     }
 
-    public async Task<bool> SetDefaultAddressAsync(string userId, int id)
+    public async Task<bool> SetDefaultAddressAsync(string userId, Guid id)
     {
         var address = await _addressRepository.GetByIdAsync(id, userId);
         if (address == null) return false;

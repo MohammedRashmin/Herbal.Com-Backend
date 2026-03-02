@@ -33,7 +33,7 @@ public class BannerController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateBanner(int id, [FromBody] UpdateBannerDto dto)
+    public async Task<ActionResult> UpdateBanner(Guid id, [FromBody] UpdateBannerDto dto)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var result = await _bannerService.UpdateBannerAsync(id, dto);
@@ -42,7 +42,7 @@ public class BannerController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteBanner(int id)
+    public async Task<ActionResult> DeleteBanner(Guid id)
     {
         var result = await _bannerService.DeleteBannerAsync(id);
         if (!result) return NotFound(new { message = "Banner not found" });
