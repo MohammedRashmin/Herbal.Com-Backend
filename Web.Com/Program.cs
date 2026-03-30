@@ -155,6 +155,11 @@ builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<JwtTokenGenerator>();
 
+// Cloudinary
+builder.Services.Configure<Web.Com.Helpers.CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddScoped<Web.Com.Services.Interfaces.Shared.IPhotoService, Web.Com.Services.Implementations.Shared.PhotoService>();
+
 // Register Admin Folders
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -190,6 +195,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 // CORS must come before Authentication
 app.UseCors("AllowAngular");

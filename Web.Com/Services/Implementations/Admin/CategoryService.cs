@@ -1,17 +1,21 @@
 using Web.Com.DTOs.Admin;
 using Web.Com.Entities;
+using Web.Com.Helpers;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Services.Interfaces.Admin;
+using Web.Com.Services.Interfaces.Shared;
 
 namespace Web.Com.Services.Implementations.Admin;
 
 public class CategoryService : ICategoryService
 {
   private readonly ICategoryRepository _categoryRepository;
+  private readonly IPhotoService _photoService;
 
-  public CategoryService(ICategoryRepository categoryRepository)
+  public CategoryService(ICategoryRepository categoryRepository, IPhotoService photoService)
   {
     _categoryRepository = categoryRepository;
+    _photoService = photoService;
   }
 
   public async Task<IEnumerable<CategoryResponseDto>> GetCategoriesAsync()
@@ -22,7 +26,8 @@ public class CategoryService : ICategoryService
       Id = c.Id,
       Name = c.Name,
       Description = c.Description,
-      ImageUrl = c.ImageUrl,
+      ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(c.ImageUrl),
+      CloudinaryPublicId = c.CloudinaryPublicId,
       IsActive = c.IsActive,
       ProductCount = c.Products.Count,
       DisplayOrder = c.DisplayOrder,
@@ -38,7 +43,8 @@ public class CategoryService : ICategoryService
       Id = c.Id,
       Name = c.Name,
       Description = c.Description,
-      ImageUrl = c.ImageUrl,
+      ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(c.ImageUrl),
+      CloudinaryPublicId = c.CloudinaryPublicId,
       IsActive = c.IsActive,
       ProductCount = c.Products?.Count ?? 0,
       DisplayOrder = c.DisplayOrder,
@@ -52,6 +58,7 @@ public class CategoryService : ICategoryService
       Name = dto.Name,
       Description = dto.Description,
       ImageUrl = dto.ImageUrl,
+      CloudinaryPublicId = dto.CloudinaryPublicId,
       DisplayOrder = dto.DisplayOrder,
       IsActive = dto.IsActive,
     };
@@ -63,7 +70,8 @@ public class CategoryService : ICategoryService
       Id = category.Id,
       Name = category.Name,
       Description = category.Description,
-      ImageUrl = category.ImageUrl,
+      ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(category.ImageUrl),
+      CloudinaryPublicId = category.CloudinaryPublicId,
       IsActive = category.IsActive,
     };
   }
@@ -77,6 +85,7 @@ public class CategoryService : ICategoryService
     category.Name = dto.Name;
     category.Description = dto.Description;
     category.ImageUrl = dto.ImageUrl;
+    category.CloudinaryPublicId = dto.CloudinaryPublicId;
     category.DisplayOrder = dto.DisplayOrder;
     category.IsActive = dto.IsActive;
 
@@ -93,6 +102,9 @@ public class CategoryService : ICategoryService
     var hasProducts = await _categoryRepository.HasProductsAsync(id);
     if (hasProducts)
       throw new InvalidOperationException("Cannot delete category with products.");
+
+    if (!string.IsNullOrEmpty(category.CloudinaryPublicId))
+      _ = await _photoService.DeletePhotoAsync(category.CloudinaryPublicId);
 
     await _categoryRepository.DeleteAsync(category);
     return true;

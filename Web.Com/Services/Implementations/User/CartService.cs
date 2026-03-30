@@ -1,5 +1,6 @@
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
+using Web.Com.Helpers;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Repositories.Interfaces.User;
 using Web.Com.Services.Interfaces.User;
@@ -86,7 +87,7 @@ public class CartService : ICartService
             ProductName = item.Product.Name,
             Price = item.Product.Price,
             DiscountPrice = item.Product.DiscountPrice,
-            ProductImageUrl = item.Product.Images.FirstOrDefault()?.ImageUrl,
+            ProductImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(item.Product.Images.FirstOrDefault()?.ImageUrl),
             Quantity = item.Quantity,
             Stock = item.Product.Stock
         };

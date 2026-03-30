@@ -12,6 +12,10 @@ public class ProductImage
   [Required]
   public string ImageUrl { get; set; } = string.Empty;
 
+  /// <summary>Cloudinary public ID for deleting the image when product/image is removed.</summary>
+  [MaxLength(500)]
+  public string? CloudinaryPublicId { get; set; }
+
   [Required]
   public Guid ProductId { get; set; }
 

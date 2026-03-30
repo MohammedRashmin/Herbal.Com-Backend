@@ -8,9 +8,7 @@ public class NotificationHub : Hub
 {
     public override async Task OnConnectedAsync()
     {
-        // SignalR automatically maps the user based on the NameIdentifier claim
+        // SignalR automatically maps the user based on the NameIdentifier claim 
         await base.OnConnectedAsync();
     }
-
-    // This can be expanded to join specific groups or handle typing indicators, etc.
 }

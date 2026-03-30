@@ -1,5 +1,6 @@
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
+using Web.Com.Helpers;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Repositories.Interfaces.User;
 using Web.Com.Services.Interfaces.User;
@@ -25,7 +26,7 @@ public class WishlistService : IWishlistService
             Id = w.Id,
             ProductId = w.ProductId,
             ProductName = w.Product.Name,
-            ProductImageUrl = w.Product.Images.FirstOrDefault()?.ImageUrl,
+            ProductImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(w.Product.Images.FirstOrDefault()?.ImageUrl),
             Price = w.Product.Price,
             DiscountPrice = w.Product.DiscountPrice,
             Stock = w.Product.Stock,

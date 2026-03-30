@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Web.Com.DTOs.Admin;
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
+using Web.Com.Helpers;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Services.Interfaces.Admin;
+using Web.Com.Services.Interfaces.Shared;
 
 namespace Web.Com.Services.Implementations.Admin;
 
@@ -11,11 +13,16 @@ public class ProductService : IProductService
 {
   private readonly IProductRepository _productRepository;
   private readonly IWebHostEnvironment _environment;
+  private readonly IPhotoService _photoService;
 
-  public ProductService(IProductRepository productRepository, IWebHostEnvironment environment)
+  public ProductService(
+    IProductRepository productRepository,
+    IWebHostEnvironment environment,
+    IPhotoService photoService)
   {
     _productRepository = productRepository;
     _environment = environment;
+    _photoService = photoService;
   }
 
   public async Task<IEnumerable<ProductDto>> GetAllProductsAdminAsync()
@@ -79,16 +86,21 @@ public class ProductService : IProductService
     if (product == null)
       return false;
 
-    // Delete files
+    // Delete images: Cloudinary or local file
     foreach (var image in product.Images)
     {
-      var filePath = Path.Combine(
-        _environment.ContentRootPath,
-        "wwwroot",
-        image.ImageUrl.TrimStart('/')
-      );
-      if (File.Exists(filePath))
-        File.Delete(filePath);
+      if (!string.IsNullOrEmpty(image.CloudinaryPublicId))
+        _ = await _photoService.DeletePhotoAsync(image.CloudinaryPublicId);
+      else if (image.ImageUrl.StartsWith("/"))
+      {
+        var filePath = Path.Combine(
+          _environment.ContentRootPath,
+          "wwwroot",
+          image.ImageUrl.TrimStart('/')
+        );
+        if (File.Exists(filePath))
+          File.Delete(filePath);
+      }
     }
 
     await _productRepository.DeleteAsync(product);
@@ -105,26 +117,18 @@ public class ProductService : IProductService
     if (count >= 5)
       throw new InvalidOperationException("Maximum 5 images allowed per product");
 
-    var uploadsFolder = Path.Combine(
-      _environment.ContentRootPath,
-      "wwwroot",
-      "uploads",
-      "products"
-    );
-    if (!Directory.Exists(uploadsFolder))
-      Directory.CreateDirectory(uploadsFolder);
+    var result = await _photoService.AddPhotoAsync(imageFile);
+    if (result.Error != null)
+      throw new InvalidOperationException(result.Error.Message);
 
-    var fileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-    var filePath = Path.Combine(uploadsFolder, fileName);
-
-    using (var stream = new FileStream(filePath, FileMode.Create))
-    {
-      await imageFile.CopyToAsync(stream);
-    }
-
-    var imageUrl = $"/uploads/products/{fileName}";
+    var imageUrl = result.SecureUrl.AbsoluteUri;
     await _productRepository.AddImageAsync(
-      new ProductImage { ProductId = productId, ImageUrl = imageUrl }
+      new ProductImage
+      {
+        ProductId = productId,
+        ImageUrl = imageUrl,
+        CloudinaryPublicId = result.PublicId
+      }
     );
 
     var updatedProduct = await _productRepository.GetByIdAsync(productId);
@@ -137,13 +141,18 @@ public class ProductService : IProductService
     if (image == null || image.ProductId != productId)
       return false;
 
-    var filePath = Path.Combine(
-      _environment.ContentRootPath,
-      "wwwroot",
-      image.ImageUrl.TrimStart('/')
-    );
-    if (File.Exists(filePath))
-      File.Delete(filePath);
+    if (!string.IsNullOrEmpty(image.CloudinaryPublicId))
+      _ = await _photoService.DeletePhotoAsync(image.CloudinaryPublicId);
+    else if (image.ImageUrl.StartsWith("/"))
+    {
+      var filePath = Path.Combine(
+        _environment.ContentRootPath,
+        "wwwroot",
+        image.ImageUrl.TrimStart('/')
+      );
+      if (File.Exists(filePath))
+        File.Delete(filePath);
+    }
 
     await _productRepository.DeleteImageAsync(image);
     return true;
@@ -196,7 +205,7 @@ public class ProductService : IProductService
         DiscountPrice = p.DiscountPrice,
         AverageRating = p.AverageRating,
         Stock = p.Stock,
-        ImageUrl = p.Images.FirstOrDefault()?.ImageUrl,
+        ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(p.Images.FirstOrDefault()?.ImageUrl),
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
@@ -229,7 +238,7 @@ public class ProductService : IProductService
       IsMemberOnly = p.IsMemberOnly,
       Sku = p.Sku,
       ExpiryDate = p.ExpiryDate,
-      ImageUrls = p.Images.Select(i => i.ImageUrl).ToList(),
+      ImageUrls = p.Images.Select(i => CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl)).ToList(),
       Reviews =
         p.Reviews?.Where(r => r.IsApproved)
           .Select(r => new ReviewDto
@@ -261,7 +270,7 @@ public class ProductService : IProductService
         DiscountPrice = p.DiscountPrice,
         AverageRating = p.AverageRating,
         Stock = p.Stock,
-        ImageUrl = p.Images.FirstOrDefault()?.ImageUrl,
+        ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(p.Images.FirstOrDefault()?.ImageUrl),
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
@@ -288,7 +297,7 @@ public class ProductService : IProductService
       IsMemberOnly = p.IsMemberOnly,
       Sku = p.Sku,
       ExpiryDate = p.ExpiryDate,
-      ImageUrls = p.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+      ImageUrls = p.Images?.Select(i => CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl)).ToList() ?? new List<string>(),
     };
   }
 }

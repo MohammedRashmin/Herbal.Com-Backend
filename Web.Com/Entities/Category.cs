@@ -16,6 +16,10 @@ public class Category
 
   public string? ImageUrl { get; set; }
 
+  /// <summary>Cloudinary public ID for deleting the image when category is removed.</summary>
+  [MaxLength(500)]
+  public string? CloudinaryPublicId { get; set; }
+
   public int DisplayOrder { get; set; } = 0;
 
   public bool IsActive { get; set; } = true;

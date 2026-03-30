@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Web.Com.DTOs.Admin;
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
+using Web.Com.Helpers;
 using Web.Com.Hubs;
 using Web.Com.Repositories.Interfaces.Admin;
 using Web.Com.Repositories.Interfaces.User;
@@ -214,7 +215,7 @@ public class OrderService : IOrderService
         {
           ProductId = oi.ProductId,
           ProductName = oi.Product?.Name ?? "Unknown",
-          ProductImageUrl = oi.Product?.Images.FirstOrDefault()?.ImageUrl,
+          ProductImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(oi.Product?.Images.FirstOrDefault()?.ImageUrl),
           Quantity = oi.Quantity,
           PriceAtPurchase = oi.PriceAtPurchase,
         })
@@ -243,7 +244,7 @@ public class OrderService : IOrderService
         {
           ProductId = oi.ProductId,
           ProductName = oi.Product?.Name ?? "Unknown",
-          ProductImageUrl = oi.Product?.Images.FirstOrDefault()?.ImageUrl,
+          ProductImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(oi.Product?.Images.FirstOrDefault()?.ImageUrl),
           Quantity = oi.Quantity,
           PriceAtPurchase = oi.PriceAtPurchase,
         })
