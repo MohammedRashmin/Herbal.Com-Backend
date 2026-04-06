@@ -42,6 +42,9 @@ public class Order
   public string? PayPalOrderId { get; set; }
 
   [MaxLength(100)]
+  public string? StripePaymentIntentId { get; set; }
+
+  [MaxLength(100)]
   public string? TrackingNumber { get; set; }
 
   [Required]

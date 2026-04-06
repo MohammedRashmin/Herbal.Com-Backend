@@ -1,21 +1,19 @@
 namespace Web.Com.DTOs.Shared;
 
-public class CreatePayPalOrderDto
+// Stripe — Create PaymentIntent
+public class CreatePaymentIntentDto
 {
     public Guid OrderId { get; set; }
 }
 
-public class PayPalOrderResponseDto
+public class PaymentIntentResponseDto
 {
-    public string PayPalOrderId { get; set; } = string.Empty;
-    public string ApprovalUrl { get; set; } = string.Empty;
+    public string ClientSecret { get; set; } = string.Empty;
+    public string PaymentIntentId { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
 }
 
-public class ExecutePayPalOrderDto
-{
-    public string PayPalOrderId { get; set; } = string.Empty;
-}
-
+// Shared result
 public class PaymentResultDto
 {
     public bool Success { get; set; }
