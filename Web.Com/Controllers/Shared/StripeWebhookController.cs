@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Stripe;
 using Web.Com.Data;
 using Web.Com.Entities;
+using Web.Com.Services.Interfaces.Shared;
 
 namespace Web.Com.Controllers.Shared;
 
@@ -13,11 +14,13 @@ public class StripeWebhookController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
+    private readonly IShipStationService _shipStation;
 
-    public StripeWebhookController(AppDbContext context, IConfiguration config)
+    public StripeWebhookController(AppDbContext context, IConfiguration config, IShipStationService shipStation)
     {
         _context = context;
         _config = config;
+        _shipStation = shipStation;
     }
 
     [HttpPost("webhook")]
@@ -63,12 +66,13 @@ public class StripeWebhookController : ControllerBase
         var order = await _context.Orders
             .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.Product)
+            .Include(o => o.User)
             .FirstOrDefaultAsync(o => o.StripePaymentIntentId == intent.Id);
 
         if (order == null || order.PaymentStatus == "Paid") return;
 
         order.PaymentStatus = "Paid";
-        order.Status = OrderStatus.Confirmed;
+        order.Status = OrderStatus.Paid;
 
         // Reduce stock
         foreach (var item in order.OrderItems)
@@ -89,6 +93,14 @@ public class StripeWebhookController : ControllerBase
         });
 
         await _context.SaveChangesAsync();
+
+        // Push to ShipStation
+        var shipStationOrderId = await _shipStation.PushOrderAsync(order);
+        if (shipStationOrderId != null)
+        {
+            order.ShipStationOrderId = shipStationOrderId;
+            await _context.SaveChangesAsync();
+        }
     }
 
     private async Task HandlePaymentFailed(Event stripeEvent)
