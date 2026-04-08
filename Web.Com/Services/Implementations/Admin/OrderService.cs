@@ -70,7 +70,7 @@ public class OrderService : IOrderService
 
     if (
       previousStatus == OrderStatus.Pending
-      && newStatus == OrderStatus.Confirmed
+      && newStatus == OrderStatus.Paid
       && order.PaymentStatus == "Paid"
     )
     {
@@ -91,7 +91,7 @@ public class OrderService : IOrderService
       Title = $"Order {newStatus}",
       Message = newStatus switch
       {
-        OrderStatus.Confirmed => $"Your order #{order.Id} has been confirmed.",
+        OrderStatus.Paid => $"Your order #{order.Id} has been confirmed.",
         OrderStatus.Shipped =>
           $"Your order #{order.Id} has been shipped. Tracking: {order.TrackingNumber}",
         OrderStatus.Delivered => $"Your order #{order.Id} has been delivered.",

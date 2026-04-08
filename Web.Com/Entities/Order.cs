@@ -7,7 +7,7 @@ namespace Web.Com.Entities;
 public enum OrderStatus
 {
   Pending = 0,
-  Confirmed = 1,
+  Paid = 1,
   Shipped = 2,
   Delivered = 3,
   Cancelled = 4,
@@ -46,6 +46,14 @@ public class Order
 
   [MaxLength(100)]
   public string? TrackingNumber { get; set; }
+
+  [MaxLength(100)]
+  public string? ShipStationOrderId { get; set; }
+
+  [MaxLength(50)]
+  public string? Carrier { get; set; }
+
+  public DateTime? DeliveredAt { get; set; }
 
   [Required]
   [MaxLength(500)]

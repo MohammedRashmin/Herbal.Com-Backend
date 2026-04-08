@@ -36,6 +36,10 @@ builder.Services.AddSignalR();
 builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
+// ShipStation
+builder.Services.Configure<ShipStationSettings>(builder.Configuration.GetSection("ShipStation"));
+builder.Services.AddHttpClient<Web.Com.Services.Interfaces.Shared.IShipStationService, Web.Com.Services.Implementations.Shared.ShipStationService>();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
