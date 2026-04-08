@@ -21,6 +21,7 @@ using Web.Com.Repositories.Implementations.User;
 using Web.Com.Services.Interfaces.User;
 using Web.Com.Services.Implementations.User;
 using Web.Com.Hubs;
+using Web.Com.Settings;
 
 // Keep JWT claims with original names (role, email, etc.) - don't map to long URIs
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
@@ -30,6 +31,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
+
+// Stripe
+builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
+// ShipStation
+builder.Services.Configure<ShipStationSettings>(builder.Configuration.GetSection("ShipStation"));
+builder.Services.AddHttpClient<Web.Com.Services.Interfaces.Shared.IShipStationService, Web.Com.Services.Implementations.Shared.ShipStationService>();
 
 // Configure CORS
 builder.Services.AddCors(options =>

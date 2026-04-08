@@ -2,9 +2,11 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Stripe;
 using Web.Com.Data;
 using Web.Com.DTOs.Shared;
-using Web.Com.Entities;
+using Web.Com.Settings;
 
 namespace Web.Com.Controllers.Shared;
 
@@ -14,26 +16,28 @@ namespace Web.Com.Controllers.Shared;
 public class PaymentController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly IConfiguration _configuration;
+    private readonly StripeSettings _stripe;
 
-    public PaymentController(AppDbContext context, IConfiguration configuration)
+    public PaymentController(AppDbContext context, IOptions<StripeSettings> stripeOptions)
     {
         _context = context;
-        _configuration = configuration;
+        _stripe = stripeOptions.Value;
     }
 
     /// <summary>
-    /// Creates a PayPal order for the given local order
-    /// In production, this would call PayPal API to create an order
+    /// Creates a Stripe PaymentIntent for the given order.
+    /// Returns clientSecret to the frontend to confirm payment via Stripe.js.
     /// </summary>
-    [HttpPost("paypal/create")]
-    public async Task<ActionResult<PayPalOrderResponseDto>> CreatePayPalOrder([FromBody] CreatePayPalOrderDto dto)
+    [HttpPost("stripe/create-intent")]
+    public async Task<ActionResult<PaymentIntentResponseDto>> CreatePaymentIntent(
+        [FromBody] CreatePaymentIntentDto dto)
     {
         var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
         var order = await _context.Orders
+            .Include(o => o.User)
             .FirstOrDefaultAsync(o => o.Id == dto.OrderId && o.UserId == userId);
 
         if (order == null)
@@ -42,91 +46,41 @@ public class PaymentController : ControllerBase
         if (order.PaymentStatus == "Paid")
             return BadRequest(new { message = "Order is already paid" });
 
-        // In production, you would call PayPal API here:
-        // var paypalClient = new PayPalHttpClient(environment);
-        // var request = new OrdersCreateRequest();
-        // var result = await paypalClient.Execute(request);
+        // Amount in cents (Stripe requires smallest currency unit)
+        var amountInCents = (long)(order.TotalAmount * 100);
 
-        // For now, we simulate the PayPal order creation
-        var paypalOrderId = $"PAYPAL-{Guid.NewGuid():N}".ToUpper();
-        
-        order.PayPalOrderId = paypalOrderId;
-        await _context.SaveChangesAsync();
-
-        // In production, the approval URL would come from PayPal
-        var approvalUrl = $"https://www.sandbox.paypal.com/checkoutnow?token={paypalOrderId}";
-
-        return Ok(new PayPalOrderResponseDto
+        var options = new PaymentIntentCreateOptions
         {
-            PayPalOrderId = paypalOrderId,
-            ApprovalUrl = approvalUrl
-        });
-    }
-
-    /// <summary>
-    /// Executes/captures the PayPal payment after user approval
-    /// In production, this would call PayPal API to capture the payment
-    /// </summary>
-    [HttpPost("paypal/execute")]
-    public async Task<ActionResult<PaymentResultDto>> ExecutePayPalOrder([FromBody] ExecutePayPalOrderDto dto)
-    {
-        var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
-
-        var order = await _context.Orders
-            .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)
-            .FirstOrDefaultAsync(o => o.PayPalOrderId == dto.PayPalOrderId && o.UserId == userId);
-
-        if (order == null)
-            return NotFound(new { message = "Order not found" });
-
-        if (order.PaymentStatus == "Paid")
-            return BadRequest(new { message = "Order is already paid" });
-
-        // In production, you would call PayPal API to capture the payment:
-        // var request = new OrdersCaptureRequest(dto.PayPalOrderId);
-        // var result = await paypalClient.Execute(request);
-        // if (result.Result.Status == "COMPLETED") { ... }
-
-        // Simulate successful payment
-        order.PaymentStatus = "Paid";
-        order.Status = OrderStatus.Confirmed;
-
-        // Reduce stock
-        foreach (var item in order.OrderItems)
-        {
-            item.Product.Stock -= item.Quantity;
-        }
-
-        // Clear user's cart
-        var cartItems = await _context.CartItems
-            .Where(c => c.UserId == userId)
-            .ToListAsync();
-        _context.CartItems.RemoveRange(cartItems);
-
-        // Create notification
-        var notification = new Notification
-        {
-            UserId = userId,
-            Title = "Payment Successful",
-            Message = $"Your payment for order #{order.Id} has been received. Thank you!"
+            Amount = amountInCents,
+            Currency = "usd",
+            ReceiptEmail = order.User?.Email,
+            Description = $"Order #{order.Id}",
+            Metadata = new Dictionary<string, string>
+            {
+                { "orderId", order.Id.ToString() },
+                { "userId", userId },
+                { "customerName", $"{order.User?.FirstName} {order.User?.LastName}".Trim() }
+            }
         };
-        _context.Notifications.Add(notification);
 
+        var service = new PaymentIntentService();
+        var intent = await service.CreateAsync(options);
+
+        // Save PaymentIntentId to order
+        order.StripePaymentIntentId = intent.Id;
+        order.PaymentMethod = "Card";
         await _context.SaveChangesAsync();
 
-        return Ok(new PaymentResultDto
+        return Ok(new PaymentIntentResponseDto
         {
-            Success = true,
-            Message = "Payment successful",
-            OrderId = order.Id
+            ClientSecret = intent.ClientSecret,
+            PaymentIntentId = intent.Id,
+            Amount = order.TotalAmount
         });
     }
 
     /// <summary>
-    /// For Cash on Delivery orders - confirms the order without payment
+    /// For Cash on Delivery orders — confirms order without payment
     /// </summary>
     [HttpPost("cod")]
     public async Task<ActionResult<PaymentResultDto>> ConfirmCODOrder([FromQuery] Guid orderId)
