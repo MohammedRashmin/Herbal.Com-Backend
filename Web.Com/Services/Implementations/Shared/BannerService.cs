@@ -30,11 +30,10 @@ public class BannerService : IBannerService
             Title = b.Title,
             Subtitle = b.Subtitle,
             ImageUrl = b.ImageUrl,
-            Tag = b.Tag,
-            TargetType = b.ProductId != null ? "Product" : b.CategoryId != null ? "Category" : b.ExternalUrl != null ? "External" : null,
-            TargetId = b.ProductId ?? b.CategoryId,
-            ExternalUrl = b.ExternalUrl,
-            IsMemberOnly = b.IsMemberOnly
+            LinkType = b.ProductId != null ? "Product" : b.CategoryId != null ? "Category" : "External",
+            LinkValue = b.ProductId?.ToString() ?? b.CategoryId?.ToString() ?? b.ExternalUrl,
+            IsActive = b.IsActive,
+            Order = b.DisplayOrder
         });
     }
 
@@ -49,6 +48,7 @@ public class BannerService : IBannerService
             ProductId = dto.ProductId,
             CategoryId = dto.CategoryId,
             ExternalUrl = dto.ExternalUrl,
+            IsActive = dto.IsActive,
             IsMemberOnly = dto.IsMemberOnly,
             EndDate = dto.EndDate,
             DisplayOrder = dto.DisplayOrder
@@ -75,6 +75,15 @@ public class BannerService : IBannerService
         banner.DisplayOrder = dto.DisplayOrder;
         banner.IsActive = dto.IsActive;
 
+        await _bannerRepository.UpdateAsync(banner);
+        return true;
+    }
+
+    public async Task<bool> ToggleActiveAsync(Guid id, bool isActive)
+    {
+        var banner = await _bannerRepository.GetByIdAsync(id);
+        if (banner == null) return false;
+        banner.IsActive = isActive;
         await _bannerRepository.UpdateAsync(banner);
         return true;
     }

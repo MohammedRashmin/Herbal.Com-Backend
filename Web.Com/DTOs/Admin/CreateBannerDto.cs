@@ -22,12 +22,10 @@ public class CreateBannerDto
   public Guid? CategoryId { get; set; }
   public string? ExternalUrl { get; set; }
 
+  public bool IsActive { get; set; } = true;
   public bool IsMemberOnly { get; set; } = false;
   public DateTime? EndDate { get; set; }
   public int DisplayOrder { get; set; } = 0;
 }
 
-public class UpdateBannerDto : CreateBannerDto
-{
-  public bool IsActive { get; set; } = true;
-}
+public class UpdateBannerDto : CreateBannerDto { }

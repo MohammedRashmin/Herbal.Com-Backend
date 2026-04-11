@@ -9,6 +9,7 @@ public interface IBannerService
     Task<IEnumerable<BannerResponseDto>> GetAllBannersAsync();
     Task<BannerResponseDto> CreateBannerAsync(CreateBannerDto dto);
     Task<bool> UpdateBannerAsync(Guid id, UpdateBannerDto dto);
+    Task<bool> ToggleActiveAsync(Guid id, bool isActive);
     Task<bool> DeleteBannerAsync(Guid id);
 
     // User

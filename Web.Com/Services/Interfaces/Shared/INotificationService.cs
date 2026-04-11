@@ -5,6 +5,7 @@ namespace Web.Com.Services.Interfaces.Shared;
 public interface INotificationService
 {
     Task<IEnumerable<NotificationDto>> GetUserNotificationsAsync(string userId);
+    Task SendNotificationAsync(string userId, string title, string message);
     Task<bool> MarkAsReadAsync(Guid notificationId);
     Task<bool> DeleteNotificationAsync(Guid notificationId);
 }

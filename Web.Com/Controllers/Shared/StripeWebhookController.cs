@@ -15,12 +15,14 @@ public class StripeWebhookController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IConfiguration _config;
     private readonly IShipStationService _shipStation;
+    private readonly INotificationService _notificationService;
 
-    public StripeWebhookController(AppDbContext context, IConfiguration config, IShipStationService shipStation)
+    public StripeWebhookController(AppDbContext context, IConfiguration config, IShipStationService shipStation, INotificationService notificationService)
     {
         _context = context;
         _config = config;
         _shipStation = shipStation;
+        _notificationService = notificationService;
     }
 
     [HttpPost("webhook")]
@@ -84,15 +86,13 @@ public class StripeWebhookController : ControllerBase
         var cartItems = _context.CartItems.Where(c => c.UserId == order.UserId);
         _context.CartItems.RemoveRange(cartItems);
 
-        // Notification
-        _context.Notifications.Add(new Notification
-        {
-            UserId = order.UserId,
-            Title = "Payment Successful",
-            Message = $"Your payment for order #{order.Id} has been received. Thank you!"
-        });
-
         await _context.SaveChangesAsync();
+
+        // Push real-time notification
+        await _notificationService.SendNotificationAsync(
+            order.UserId,
+            "Payment Successful",
+            $"Your payment for order #{order.Id} has been received. Thank you!");
 
         // Push to ShipStation
         var shipStationOrderId = await _shipStation.PushOrderAsync(order);

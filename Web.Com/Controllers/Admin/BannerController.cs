@@ -41,6 +41,14 @@ public class BannerController : ControllerBase
         return Ok(new { message = "Banner updated successfully" });
     }
 
+    [HttpPatch("{id}/toggle-active")]
+    public async Task<ActionResult> ToggleActive(Guid id, [FromBody] bool isActive)
+    {
+        var result = await _bannerService.ToggleActiveAsync(id, isActive);
+        if (!result) return NotFound(new { message = "Banner not found" });
+        return Ok(new { message = "Banner status updated" });
+    }
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteBanner(Guid id)
     {
