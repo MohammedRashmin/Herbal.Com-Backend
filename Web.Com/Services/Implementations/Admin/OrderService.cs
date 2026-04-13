@@ -14,16 +14,19 @@ public class OrderService : IOrderService
 {
   private readonly IOrderRepository _orderRepository;
   private readonly ICartRepository _cartRepository;
+  private readonly IProductRepository _productRepository;
   private readonly IHubContext<NotificationHub> _hubContext;
 
   public OrderService(
     IOrderRepository orderRepository,
     ICartRepository cartRepository,
+    IProductRepository productRepository,
     IHubContext<NotificationHub> hubContext
   )
   {
     _orderRepository = orderRepository;
     _cartRepository = cartRepository;
+    _productRepository = productRepository;
     _hubContext = hubContext;
   }
 
@@ -195,6 +198,61 @@ public class OrderService : IOrderService
       OrderId = order.Id,
       Message = "Order created successfully",
     };
+  }
+
+  public async Task<OrderResponseDto> CreateOrderDirectAsync(string userId, CreateOrderDirectDto dto)
+  {
+    var product = await _productRepository.GetByIdAsync(dto.ProductId)
+      ?? throw new InvalidOperationException("Product not found");
+
+    if (product.Stock < dto.Quantity)
+      throw new InvalidOperationException($"Insufficient stock for {product.Name}");
+
+    var unitPrice = product.DiscountPrice ?? product.Price;
+    var total = unitPrice * dto.Quantity;
+
+    var order = new Order
+    {
+      UserId = userId,
+      TotalAmount = total,
+      PaymentMethod = dto.PaymentMethod,
+      PaymentStatus = dto.PaymentMethod == "COD" ? "COD" : "Pending",
+      ShippingAddress = dto.ShippingAddress,
+      PhoneNumber = dto.PhoneNumber,
+      Status = OrderStatus.Pending,
+    };
+
+    order.OrderItems.Add(new OrderItem
+    {
+      ProductId = product.Id,
+      Quantity = dto.Quantity,
+      PriceAtPurchase = unitPrice,
+    });
+
+    if (dto.PaymentMethod == "COD")
+      product.Stock -= dto.Quantity;
+
+    await _orderRepository.CreateAsync(order);
+
+    var notification = new Notification
+    {
+      UserId = userId,
+      Title = "Order Created",
+      Message = $"Your order #{order.Id} has been created successfully.",
+    };
+
+    await _orderRepository.AddNotificationAsync(notification);
+
+    await _hubContext.Clients.User(userId).SendAsync("ReceiveNotification", new
+    {
+      id = notification.Id,
+      title = notification.Title,
+      message = notification.Message,
+      isRead = notification.IsRead,
+      createdAt = notification.CreatedAt,
+    });
+
+    return new OrderResponseDto { OrderId = order.Id, Message = "Order created successfully" };
   }
 
   public async Task<IEnumerable<OrderDto>> GetMyOrdersAsync(string userId)

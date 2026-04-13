@@ -68,6 +68,16 @@ public class ProductRepository : IProductRepository
     return await _context.ProductImages.CountAsync(i => i.ProductId == productId);
   }
 
+  public async Task ClearMainFlagAsync(Guid productId)
+  {
+    var mainImages = await _context.ProductImages
+      .Where(i => i.ProductId == productId && i.IsMain)
+      .ToListAsync();
+    foreach (var img in mainImages)
+      img.IsMain = false;
+    await _context.SaveChangesAsync();
+  }
+
   public async Task<IEnumerable<Product>> SearchAsync(string keyword, int limit)
   {
     return await _context

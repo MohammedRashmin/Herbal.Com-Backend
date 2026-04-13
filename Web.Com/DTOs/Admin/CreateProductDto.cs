@@ -43,6 +43,12 @@ public class CreateProductDto
   [MaxLength(100)]
   public string? Sku { get; set; }
   public DateTime? ExpiryDate { get; set; }
+
+  [MaxLength(100)]
+  public string? ServingSize { get; set; }
+  public int? ServingsPerContainer { get; set; }
+  public List<string>? Badges { get; set; }
+  public List<string>? Benefits { get; set; }
 }
 
 public class UpdateProductDto : CreateProductDto { }

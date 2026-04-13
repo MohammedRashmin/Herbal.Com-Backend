@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Web.Com.DTOs.Admin;
 using Web.Com.DTOs.User;
@@ -49,6 +50,10 @@ public class ProductService : IProductService
       IsFeatured = dto.IsFeatured,
       Sku = dto.Sku,
       ExpiryDate = dto.ExpiryDate,
+      ServingSize = dto.ServingSize,
+      ServingsPerContainer = dto.ServingsPerContainer,
+      Badges = dto.Badges != null ? JsonSerializer.Serialize(dto.Badges) : null,
+      Benefits = dto.Benefits != null ? JsonSerializer.Serialize(dto.Benefits) : null,
     };
 
     var createdProduct = await _productRepository.CreateAsync(product);
@@ -75,6 +80,10 @@ public class ProductService : IProductService
     product.IsFeatured = dto.IsFeatured;
     product.Sku = dto.Sku;
     product.ExpiryDate = dto.ExpiryDate;
+    product.ServingSize = dto.ServingSize;
+    product.ServingsPerContainer = dto.ServingsPerContainer;
+    product.Badges = dto.Badges != null ? JsonSerializer.Serialize(dto.Badges) : null;
+    product.Benefits = dto.Benefits != null ? JsonSerializer.Serialize(dto.Benefits) : null;
 
     await _productRepository.UpdateAsync(product);
     return true;
@@ -107,7 +116,7 @@ public class ProductService : IProductService
     return true;
   }
 
-  public async Task<ProductDto> AddProductImageAsync(Guid productId, IFormFile imageFile)
+  public async Task<ProductDto> AddProductImageAsync(Guid productId, IFormFile imageFile, bool isMain = false)
   {
     var product = await _productRepository.GetByIdAsync(productId);
     if (product == null)
@@ -121,13 +130,17 @@ public class ProductService : IProductService
     if (result.Error != null)
       throw new InvalidOperationException(result.Error.Message);
 
+    if (isMain)
+      await _productRepository.ClearMainFlagAsync(productId);
+
     var imageUrl = result.SecureUrl.AbsoluteUri;
     await _productRepository.AddImageAsync(
       new ProductImage
       {
         ProductId = productId,
         ImageUrl = imageUrl,
-        CloudinaryPublicId = result.PublicId
+        CloudinaryPublicId = result.PublicId,
+        IsMain = isMain
       }
     );
 
@@ -205,7 +218,8 @@ public class ProductService : IProductService
         DiscountPrice = p.DiscountPrice,
         AverageRating = p.AverageRating,
         Stock = p.Stock,
-        ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(p.Images.FirstOrDefault()?.ImageUrl),
+        ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(
+          (p.Images.FirstOrDefault(i => i.IsMain) ?? p.Images.FirstOrDefault())?.ImageUrl),
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
@@ -238,6 +252,10 @@ public class ProductService : IProductService
       IsMemberOnly = p.IsMemberOnly,
       Sku = p.Sku,
       ExpiryDate = p.ExpiryDate,
+      ServingSize = p.ServingSize,
+      ServingsPerContainer = p.ServingsPerContainer,
+      Badges = string.IsNullOrEmpty(p.Badges) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(p.Badges)!,
+      Benefits = string.IsNullOrEmpty(p.Benefits) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(p.Benefits)!,
       ImageUrls = p.Images.Select(i => CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl)).ToList(),
       Reviews =
         p.Reviews?.Where(r => r.IsApproved)
@@ -270,7 +288,8 @@ public class ProductService : IProductService
         DiscountPrice = p.DiscountPrice,
         AverageRating = p.AverageRating,
         Stock = p.Stock,
-        ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(p.Images.FirstOrDefault()?.ImageUrl),
+        ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(
+          (p.Images.FirstOrDefault(i => i.IsMain) ?? p.Images.FirstOrDefault())?.ImageUrl),
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
@@ -297,7 +316,14 @@ public class ProductService : IProductService
       IsMemberOnly = p.IsMemberOnly,
       Sku = p.Sku,
       ExpiryDate = p.ExpiryDate,
-      ImageUrls = p.Images?.Select(i => CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl)).ToList() ?? new List<string>(),
+      ServingSize = p.ServingSize,
+      ServingsPerContainer = p.ServingsPerContainer,
+      Badges = string.IsNullOrEmpty(p.Badges) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(p.Badges)!,
+      Benefits = string.IsNullOrEmpty(p.Benefits) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(p.Benefits)!,
+      ImageUrls = p.Images?
+        .OrderByDescending(i => i.IsMain)
+        .Select(i => CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl))
+        .ToList() ?? new List<string>(),
     };
   }
 }

@@ -11,6 +11,7 @@ public interface IOrderService
 
   // User
   Task<OrderResponseDto> CreateOrderAsync(string userId, CreateOrderDto dto);
+  Task<OrderResponseDto> CreateOrderDirectAsync(string userId, CreateOrderDirectDto dto);
   Task<IEnumerable<OrderDto>> GetMyOrdersAsync(string userId);
   Task<OrderDto?> GetOrderByIdAsync(string userId, Guid id);
 }

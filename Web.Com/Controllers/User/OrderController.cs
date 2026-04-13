@@ -35,6 +35,23 @@ public class OrderController : ControllerBase
         }
     }
 
+    [HttpPost("create-direct")]
+    public async Task<ActionResult<OrderResponseDto>> CreateOrderDirect([FromBody] CreateOrderDirectDto dto)
+    {
+        var userId = User.FindFirstValue("userId") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        try
+        {
+            var result = await _orderService.CreateOrderDirectAsync(userId, dto);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpGet("my-orders")]
     public async Task<ActionResult<IEnumerable<OrderDto>>> GetMyOrders()
     {

@@ -16,6 +16,8 @@ public class ProductImage
   [MaxLength(500)]
   public string? CloudinaryPublicId { get; set; }
 
+  public bool IsMain { get; set; } = false;
+
   [Required]
   public Guid ProductId { get; set; }
 

@@ -18,5 +18,9 @@ public class ProductDto
   public bool IsMemberOnly { get; set; }
   public string? Sku { get; set; }
   public DateTime? ExpiryDate { get; set; }
+  public string? ServingSize { get; set; }
+  public int? ServingsPerContainer { get; set; }
+  public List<string> Badges { get; set; } = new();
+  public List<string> Benefits { get; set; } = new();
   public List<string> ImageUrls { get; set; } = new();
 }

@@ -4,7 +4,16 @@ public class CreateOrderDto
 {
   public string ShippingAddress { get; set; } = string.Empty;
   public string PhoneNumber { get; set; } = string.Empty;
-  public string PaymentMethod { get; set; } = string.Empty; // "PayPal", "COD"
+  public string PaymentMethod { get; set; } = string.Empty; // "Card", "COD"
+}
+
+public class CreateOrderDirectDto
+{
+  public Guid ProductId { get; set; }
+  public int Quantity { get; set; } = 1;
+  public string ShippingAddress { get; set; } = string.Empty;
+  public string PhoneNumber { get; set; } = string.Empty;
+  public string PaymentMethod { get; set; } = string.Empty; // "Card", "COD"
 }
 
 public class OrderDto

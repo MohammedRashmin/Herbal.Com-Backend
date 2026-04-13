@@ -55,6 +55,17 @@ public class Product
 
   public bool IsFeatured { get; set; } = false;
 
+  [MaxLength(100)]
+  public string? ServingSize { get; set; }
+
+  public int? ServingsPerContainer { get; set; }
+
+  [MaxLength(500)]
+  public string? Badges { get; set; }  // JSON array
+
+  [MaxLength(2000)]
+  public string? Benefits { get; set; }  // JSON array
+
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
   // Relationships

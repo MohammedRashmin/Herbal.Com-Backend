@@ -13,7 +13,7 @@ public class Banner
   public string Title { get; set; } = string.Empty;
 
   [Required]
-  [MaxLength(200)]
+  [MaxLength(500)]
   public string Subtitle { get; set; } = string.Empty;
 
   [Required]

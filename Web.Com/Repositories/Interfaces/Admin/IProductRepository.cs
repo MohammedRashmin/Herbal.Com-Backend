@@ -13,5 +13,6 @@ public interface IProductRepository
   Task DeleteImageAsync(ProductImage image);
   Task<ProductImage?> GetImageByIdAsync(Guid imageId);
   Task<int> GetImageCountAsync(Guid productId);
+  Task ClearMainFlagAsync(Guid productId);
   Task<IEnumerable<Product>> SearchAsync(string keyword, int limit);
 }

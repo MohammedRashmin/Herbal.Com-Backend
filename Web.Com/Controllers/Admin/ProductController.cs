@@ -50,12 +50,15 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost("{id}/upload-image")]
-    public async Task<ActionResult> UploadImage(Guid id, IFormFile file)
+    public async Task<ActionResult> UploadImage(Guid id, IFormFile file, [FromQuery] bool isMain = false)
     {
         try
         {
-            var result = await _productService.AddProductImageAsync(id, file);
-            return Ok(new { imageUrl = result.ImageUrls.Last(), message = "Image uploaded successfully" });
+            var result = await _productService.AddProductImageAsync(id, file, isMain);
+            var returnedUrl = isMain
+                ? result.ImageUrls.FirstOrDefault() ?? ""
+                : result.ImageUrls.LastOrDefault() ?? "";
+            return Ok(new { imageUrl = returnedUrl, message = "Image uploaded successfully" });
         }
         catch (KeyNotFoundException ex)
         {
