@@ -24,6 +24,14 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ProductDto>> GetProduct(Guid id)
+    {
+        var product = await _productService.GetProductByIdAdminAsync(id);
+        if (product == null) return NotFound(new { message = "Product not found" });
+        return Ok(product);
+    }
+ 
     [HttpPost]
     public async Task<ActionResult> CreateProduct([FromBody] CreateProductDto dto)
     {
@@ -54,11 +62,11 @@ public class ProductController : ControllerBase
     {
         try
         {
-            var result = await _productService.AddProductImageAsync(id, file, isMain);
+            var (product, imageId) = await _productService.AddProductImageAsync(id, file, isMain);
             var returnedUrl = isMain
-                ? result.ImageUrls.FirstOrDefault() ?? ""
-                : result.ImageUrls.LastOrDefault() ?? "";
-            return Ok(new { imageUrl = returnedUrl, message = "Image uploaded successfully" });
+                ? product.ImageUrls.FirstOrDefault() ?? ""
+                : product.ImageUrls.LastOrDefault() ?? "";
+            return Ok(new { imageUrl = returnedUrl, imageId, message = "Image uploaded successfully" });
         }
         catch (KeyNotFoundException ex)
         {

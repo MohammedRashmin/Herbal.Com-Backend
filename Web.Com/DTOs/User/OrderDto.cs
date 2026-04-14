@@ -25,6 +25,7 @@ public class OrderDto
   public string PaymentMethod { get; set; } = string.Empty;
   public string PaymentStatus { get; set; } = string.Empty;
   public string? TrackingNumber { get; set; }
+  public string? Carrier { get; set; }
   public string ShippingAddress { get; set; } = string.Empty;
   public List<OrderItemDto> Items { get; set; } = new();
 }

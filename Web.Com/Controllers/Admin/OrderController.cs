@@ -24,6 +24,14 @@ public class OrderController : ControllerBase
         return Ok(orders);
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult<AdminOrderDetailDto>> GetOrderById(Guid id)
+    {
+        var order = await _orderService.GetOrderByIdAdminAsync(id);
+        if (order == null) return NotFound(new { message = "Order not found" });
+        return Ok(order);
+    }
+
     [HttpPut("{id}/status")]
     public async Task<ActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDto dto)
     {

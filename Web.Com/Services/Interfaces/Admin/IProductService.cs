@@ -6,10 +6,11 @@ namespace Web.Com.Services.Interfaces.Admin;
 public interface IProductService
 {
   // Admin
+  Task<ProductDto?> GetProductByIdAdminAsync(Guid id);
   Task<ProductDto> CreateProductAsync(CreateProductDto dto);
   Task<bool> UpdateProductAsync(Guid id, UpdateProductDto dto);
   Task<bool> DeleteProductAsync(Guid id);
-  Task<ProductDto> AddProductImageAsync(Guid productId, IFormFile imageFile, bool isMain = false);
+  Task<(ProductDto Product, Guid ImageId)> AddProductImageAsync(Guid productId, IFormFile imageFile, bool isMain = false);
   Task<bool> RemoveProductImageAsync(Guid productId, Guid imageId);
   Task<IEnumerable<ProductDto>> GetAllProductsAdminAsync();
 

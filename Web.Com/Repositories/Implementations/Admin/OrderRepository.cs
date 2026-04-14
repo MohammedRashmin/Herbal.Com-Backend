@@ -32,6 +32,7 @@ public class OrderRepository : IOrderRepository
       .Orders.Include(o => o.User)
       .Include(o => o.OrderItems)
         .ThenInclude(oi => oi.Product)
+          .ThenInclude(p => p!.Images)
       .FirstOrDefaultAsync(o => o.Id == id);
   }
 

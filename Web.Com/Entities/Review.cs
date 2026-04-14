@@ -29,6 +29,7 @@ public class Review
   public string Comment { get; set; } = string.Empty;
 
   public bool IsApproved { get; set; } = false;
+  public bool IsRejected { get; set; } = false;
 
   public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -52,4 +52,10 @@ public class DashboardService : IDashboardService
             CategoryName = p.Category?.Name ?? "Uncategorized"
         });
     }
+
+    public Task<IEnumerable<MonthlySalesDto>> GetMonthlySalesAsync(int year)
+        => _dashboardRepository.GetMonthlySalesAsync(year);
+
+    public Task<IEnumerable<CategoryOrdersDto>> GetOrdersByCategoryAsync()
+        => _dashboardRepository.GetOrdersByCategoryAsync();
 }

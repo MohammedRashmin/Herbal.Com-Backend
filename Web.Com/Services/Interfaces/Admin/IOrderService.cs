@@ -7,6 +7,7 @@ public interface IOrderService
 {
   // Admin
   Task<IEnumerable<AdminOrderDto>> GetOrdersAsync(string? status);
+  Task<AdminOrderDetailDto?> GetOrderByIdAdminAsync(Guid id);
   Task<bool> UpdateOrderStatusAsync(Guid id, UpdateOrderStatusDto dto);
 
   // User

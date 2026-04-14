@@ -1,3 +1,5 @@
+using Web.Com.DTOs;
+
 namespace Web.Com.DTOs.User;
 
 public class ProductDetailDto
@@ -23,6 +25,7 @@ public class ProductDetailDto
   public List<string> Badges { get; set; } = new();
   public List<string> Benefits { get; set; } = new();
   public List<string> ImageUrls { get; set; } = new();
+  public List<ProductImageItemDto> ProductImages { get; set; } = new();
   public List<ReviewDto> Reviews { get; set; } = new();
 }
 

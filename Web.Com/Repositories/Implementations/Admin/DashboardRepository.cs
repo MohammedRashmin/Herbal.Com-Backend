@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Web.Com.Data;
+using Web.Com.DTOs.Admin;
 using Web.Com.Entities;
 using Web.Com.Repositories.Interfaces.Admin;
 
@@ -57,6 +58,37 @@ public class DashboardRepository : IDashboardRepository
             .Include(p => p.Category)
             .Where(p => p.Stock <= threshold)
             .OrderBy(p => p.Stock)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<MonthlySalesDto>> GetMonthlySalesAsync(int year)
+    {
+        var raw = await _context.Orders
+            .Where(o => o.OrderDate.Year == year && (o.PaymentStatus == "Paid" || o.PaymentStatus == "COD"))
+            .GroupBy(o => o.OrderDate.Month)
+            .Select(g => new { Month = g.Key, Sales = g.Sum(o => o.TotalAmount) })
+            .OrderBy(x => x.Month)
+            .ToListAsync();
+
+        return raw.Select(x => new MonthlySalesDto
+        {
+            Month = new DateTime(year, x.Month, 1).ToString("MMM"),
+            Sales = x.Sales
+        });
+    }
+
+    public async Task<IEnumerable<CategoryOrdersDto>> GetOrdersByCategoryAsync()
+    {
+        return await _context.OrderItems
+            .Include(oi => oi.Product)
+                .ThenInclude(p => p.Category)
+            .GroupBy(oi => oi.Product.Category != null ? oi.Product.Category.Name : "Uncategorized")
+            .Select(g => new CategoryOrdersDto
+            {
+                Category = g.Key,
+                Orders = g.Count()
+            })
+            .OrderByDescending(x => x.Orders)
             .ToListAsync();
     }
 }

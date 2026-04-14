@@ -30,4 +30,18 @@ public class DashboardController : ControllerBase
         var products = await _dashboardService.GetLowStockProductsAsync();
         return Ok(products);
     }
+
+    [HttpGet("charts/monthly-sales")]
+    public async Task<ActionResult<IEnumerable<MonthlySalesDto>>> GetMonthlySales([FromQuery] int? year)
+    {
+        var result = await _dashboardService.GetMonthlySalesAsync(year ?? DateTime.UtcNow.Year);
+        return Ok(result);
+    }
+
+    [HttpGet("charts/orders-by-category")]
+    public async Task<ActionResult<IEnumerable<CategoryOrdersDto>>> GetOrdersByCategory()
+    {
+        var result = await _dashboardService.GetOrdersByCategoryAsync();
+        return Ok(result);
+    }
 }

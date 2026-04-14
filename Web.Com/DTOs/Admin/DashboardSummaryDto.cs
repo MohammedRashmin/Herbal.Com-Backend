@@ -19,3 +19,15 @@ public class LowStockProductDto
     public int Stock { get; set; }
     public string CategoryName { get; set; } = string.Empty;
 }
+
+public class MonthlySalesDto
+{
+    public string Month { get; set; } = string.Empty;
+    public decimal Sales { get; set; }
+}
+
+public class CategoryOrdersDto
+{
+    public string Category { get; set; } = string.Empty;
+    public int Orders { get; set; }
+}

@@ -15,4 +15,5 @@ public class ProductListDto
   public bool IsMemberOnly { get; set; }
   public string? Sku { get; set; }
   public DateTime? ExpiryDate { get; set; }
+  public string? Weight { get; set; }
 }

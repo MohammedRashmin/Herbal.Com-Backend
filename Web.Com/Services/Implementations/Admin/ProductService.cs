@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Web.Com.DTOs;
 using Web.Com.DTOs.Admin;
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
@@ -30,6 +31,12 @@ public class ProductService : IProductService
   {
     var products = await _productRepository.GetAllAsync();
     return products.Select(MapToDto);
+  }
+
+  public async Task<ProductDto?> GetProductByIdAdminAsync(Guid id)
+  {
+    var product = await _productRepository.GetByIdAsync(id);
+    return product == null ? null : MapToDto(product);
   }
 
   public async Task<ProductDto> CreateProductAsync(CreateProductDto dto)
@@ -116,11 +123,19 @@ public class ProductService : IProductService
     return true;
   }
 
-  public async Task<ProductDto> AddProductImageAsync(Guid productId, IFormFile imageFile, bool isMain = false)
+  public async Task<(ProductDto Product, Guid ImageId)> AddProductImageAsync(Guid productId, IFormFile imageFile, bool isMain = false)
   {
     var product = await _productRepository.GetByIdAsync(productId);
     if (product == null)
       throw new KeyNotFoundException("Product not found");
+
+    // When replacing the main image, remove the old main first so it doesn't count toward the 5-image limit
+    if (isMain)
+    {
+      var existingMain = product.Images?.FirstOrDefault(i => i.IsMain);
+      if (existingMain != null)
+        await RemoveProductImageAsync(productId, existingMain.Id);
+    }
 
     var count = await _productRepository.GetImageCountAsync(productId);
     if (count >= 5)
@@ -134,18 +149,17 @@ public class ProductService : IProductService
       await _productRepository.ClearMainFlagAsync(productId);
 
     var imageUrl = result.SecureUrl.AbsoluteUri;
-    await _productRepository.AddImageAsync(
-      new ProductImage
-      {
-        ProductId = productId,
-        ImageUrl = imageUrl,
-        CloudinaryPublicId = result.PublicId,
-        IsMain = isMain
-      }
-    );
+    var newImage = new ProductImage
+    {
+      ProductId = productId,
+      ImageUrl = imageUrl,
+      CloudinaryPublicId = result.PublicId,
+      IsMain = isMain
+    };
+    await _productRepository.AddImageAsync(newImage);
 
     var updatedProduct = await _productRepository.GetByIdAsync(productId);
-    return MapToDto(updatedProduct!);
+    return (MapToDto(updatedProduct!), newImage.Id);
   }
 
   public async Task<bool> RemoveProductImageAsync(Guid productId, Guid imageId)
@@ -225,6 +239,7 @@ public class ProductService : IProductService
         IsMemberOnly = p.IsMemberOnly,
         Sku = p.Sku,
         ExpiryDate = p.ExpiryDate,
+        Weight = p.Weight,
       });
   }
 
@@ -256,6 +271,14 @@ public class ProductService : IProductService
       ServingsPerContainer = p.ServingsPerContainer,
       Badges = string.IsNullOrEmpty(p.Badges) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(p.Badges)!,
       Benefits = string.IsNullOrEmpty(p.Benefits) ? new List<string>() : JsonSerializer.Deserialize<List<string>>(p.Benefits)!,
+      ProductImages = p.Images?
+        .OrderByDescending(i => i.IsMain)
+        .Select(i => new ProductImageItemDto
+        {
+          Id = i.Id,
+          Url = CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl),
+          IsMain = i.IsMain
+        }).ToList() ?? new List<ProductImageItemDto>(),
       ImageUrls = p.Images.Select(i => CloudinaryUrlHelper.ToDeliveryUrl(i.ImageUrl)).ToList(),
       Reviews =
         p.Reviews?.Where(r => r.IsApproved)
@@ -293,6 +316,7 @@ public class ProductService : IProductService
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
+        Weight = p.Weight,
       });
   }
 

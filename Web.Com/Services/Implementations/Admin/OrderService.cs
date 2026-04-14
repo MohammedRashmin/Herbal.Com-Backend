@@ -56,6 +56,42 @@ public class OrderService : IOrderService
     });
   }
 
+  public async Task<AdminOrderDetailDto?> GetOrderByIdAdminAsync(Guid id)
+  {
+    var o = await _orderRepository.GetByIdAsync(id);
+    if (o == null) return null;
+
+    var subtotal = o.OrderItems.Sum(oi => oi.PriceAtPurchase * oi.Quantity);
+    var shippingFee = o.TotalAmount - subtotal;
+
+    return new AdminOrderDetailDto
+    {
+      Id = o.Id,
+      CustomerName = $"{o.User?.FirstName} {o.User?.LastName}".Trim(),
+      CustomerEmail = o.User?.Email ?? string.Empty,
+      CustomerPhone = o.PhoneNumber,
+      OrderDate = o.OrderDate,
+      Subtotal = subtotal,
+      ShippingFee = shippingFee < 0 ? 0 : shippingFee,
+      TotalAmount = o.TotalAmount,
+      Status = o.Status.ToString(),
+      PaymentMethod = o.PaymentMethod,
+      PaymentStatus = o.PaymentStatus,
+      TrackingNumber = o.TrackingNumber,
+      Carrier = o.Carrier,
+      ShipStationOrderId = o.ShipStationOrderId,
+      ShippingAddress = o.ShippingAddress,
+      Items = o.OrderItems.Select(oi => new AdminOrderItemDto
+      {
+        ProductId = oi.ProductId,
+        ProductName = oi.Product?.Name ?? "Unknown",
+        ProductImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(oi.Product?.Images.FirstOrDefault()?.ImageUrl),
+        Quantity = oi.Quantity,
+        PriceAtPurchase = oi.PriceAtPurchase,
+      }).ToList()
+    };
+  }
+
   public async Task<bool> UpdateOrderStatusAsync(Guid id, UpdateOrderStatusDto dto)
   {
     var order = await _orderRepository.GetByIdAsync(id);
@@ -267,6 +303,7 @@ public class OrderService : IOrderService
       PaymentMethod = o.PaymentMethod,
       PaymentStatus = o.PaymentStatus,
       TrackingNumber = o.TrackingNumber,
+      Carrier = o.Carrier,
       ShippingAddress = o.ShippingAddress,
       Items = o
         .OrderItems.Select(oi => new OrderItemDto
@@ -296,6 +333,7 @@ public class OrderService : IOrderService
       PaymentMethod = o.PaymentMethod,
       PaymentStatus = o.PaymentStatus,
       TrackingNumber = o.TrackingNumber,
+      Carrier = o.Carrier,
       ShippingAddress = o.ShippingAddress,
       Items = o
         .OrderItems.Select(oi => new OrderItemDto

@@ -1,3 +1,4 @@
+using Web.Com.DTOs.Admin;
 using Web.Com.Entities;
 
 namespace Web.Com.Repositories.Interfaces.Admin;
@@ -12,4 +13,6 @@ public interface IDashboardRepository
     Task<int> GetTotalProductsCountAsync();
     Task<int> GetLowStockProductsCountAsync(int threshold);
     Task<IEnumerable<Product>> GetLowStockProductsAsync(int threshold);
+    Task<IEnumerable<MonthlySalesDto>> GetMonthlySalesAsync(int year);
+    Task<IEnumerable<CategoryOrdersDto>> GetOrdersByCategoryAsync();
 }

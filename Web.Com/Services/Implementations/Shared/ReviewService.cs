@@ -1,3 +1,4 @@
+using Web.Com.DTOs.Admin;
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
 using Web.Com.Repositories.Interfaces.Shared;
@@ -12,6 +13,23 @@ public class ReviewService : IReviewService
     public ReviewService(IReviewRepository reviewRepository)
     {
         _reviewRepository = reviewRepository;
+    }
+
+    public async Task<IEnumerable<AdminReviewDto>> GetAllReviewsAsync()
+    {
+        var reviews = await _reviewRepository.GetAllAsync();
+        return reviews.Select(r => new AdminReviewDto
+        {
+            Id = r.Id,
+            ProductId = r.ProductId,
+            ProductName = r.Product?.Name ?? "",
+            UserName = $"{r.User?.FirstName} {r.User?.LastName}".Trim(),
+            Rating = r.Rating,
+            Comment = r.Comment,
+            IsApproved = r.IsApproved,
+            IsRejected = r.IsRejected,
+            CreatedAt = r.CreatedAt
+        });
     }
 
     public async Task<IEnumerable<ReviewDto>> GetProductReviewsAsync(Guid productId)
@@ -42,6 +60,11 @@ public class ReviewService : IReviewService
         return true;
     }
 
+    public async Task<bool> RejectReviewAsync(Guid reviewId)
+    {
+        return await _reviewRepository.RejectAsync(reviewId);
+    }
+
     public async Task<bool> ApproveReviewAsync(Guid reviewId)
     {
         var review = await _reviewRepository.GetByIdAsync(reviewId);
@@ -49,6 +72,7 @@ public class ReviewService : IReviewService
 
         review.IsApproved = true;
         await _reviewRepository.UpdateAsync(review);
+        await _reviewRepository.RecalculateProductRatingAsync(review.ProductId);
         return true;
     }
 
@@ -60,4 +84,5 @@ public class ReviewService : IReviewService
         await _reviewRepository.DeleteAsync(review);
         return true;
     }
+
 }

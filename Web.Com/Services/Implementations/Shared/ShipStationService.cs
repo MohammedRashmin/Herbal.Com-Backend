@@ -100,8 +100,20 @@ public class ShipStationService : IShipStationService
         var country    = ToCountryCode(countryRaw);
 
         // Total weight in grams (Product.Weight is string, assumed in kg)
-        static double ParseWeight(string? w) =>
-            decimal.TryParse(w, out var kg) && kg > 0 ? (double)kg * 1000 : 500;
+        static double ParseWeight(string? w)
+        {
+            if (string.IsNullOrWhiteSpace(w)) return 500;
+            var clean = w.Trim().ToLowerInvariant();
+            // Extract numeric part
+            var numStr = new string(clean.Where(c => c == '.' || c == ',' || char.IsDigit(c)).ToArray());
+            if (!decimal.TryParse(numStr, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var value) || value <= 0)
+                return 500;
+            // If unit is kg, convert to grams
+            if (clean.Contains("kg")) return (double)value * 1000;
+            // Otherwise assume grams
+            return (double)value;
+        }
 
         var totalWeightGrams = order.OrderItems
             .Sum(i => ParseWeight(i.Product?.Weight) * i.Quantity);
