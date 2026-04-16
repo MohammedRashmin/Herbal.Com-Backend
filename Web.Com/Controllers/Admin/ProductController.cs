@@ -85,4 +85,5 @@ public class ProductController : ControllerBase
         if (!result) return NotFound(new { message = "Image not found or not associated with this product" });
         return Ok(new { message = "Image removed successfully" });
     }
+
 }

@@ -85,6 +85,7 @@ public class ProductService : IProductService
     product.CategoryId = dto.CategoryId;
     product.IsMemberOnly = dto.IsMemberOnly;
     product.IsFeatured = dto.IsFeatured;
+    product.IsActive = dto.IsActive;
     product.Sku = dto.Sku;
     product.ExpiryDate = dto.ExpiryDate;
     product.ServingSize = dto.ServingSize;
@@ -196,7 +197,7 @@ public class ProductService : IProductService
   )
   {
     var products = await _productRepository.GetAllAsync();
-    var query = products.Where(p => p.Stock > 0);
+    var query = products.Where(p => p.IsActive);
 
     if (categoryId.HasValue)
       query = query.Where(p => p.CategoryId == categoryId);

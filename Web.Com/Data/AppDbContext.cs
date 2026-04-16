@@ -34,5 +34,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Product>()
             .Property(p => p.AverageRating)
             .HasColumnType("decimal(3,2)");
+
+        builder.Entity<Coupon>()
+            .Property(c => c.DiscountValue)
+            .HasPrecision(18, 2);
+
+        builder.Entity<Coupon>()
+            .Property(c => c.MinPurchase)
+            .HasPrecision(18, 2);
     }
 }

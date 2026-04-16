@@ -39,6 +39,7 @@ public class CreateProductDto
 
   public bool IsMemberOnly { get; set; } = false;
   public bool IsFeatured { get; set; } = false;
+  public bool IsActive { get; set; } = true;
 
   [MaxLength(100)]
   public string? Sku { get; set; }

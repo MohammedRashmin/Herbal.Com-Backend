@@ -107,21 +107,6 @@ public class OrderService : IOrderService
     if (!string.IsNullOrEmpty(dto.TrackingNumber))
       order.TrackingNumber = dto.TrackingNumber;
 
-    if (
-      previousStatus == OrderStatus.Pending
-      && newStatus == OrderStatus.Paid
-      && order.PaymentStatus == "Paid"
-    )
-    {
-      foreach (var item in order.OrderItems)
-      {
-        if (item.Product != null)
-        {
-          item.Product.Stock -= item.Quantity;
-        }
-      }
-    }
-
     await _orderRepository.UpdateAsync(order);
 
     var notification = new Notification
@@ -196,14 +181,11 @@ public class OrderService : IOrderService
         }
       );
 
-      if (dto.PaymentMethod == "COD")
-        cartItem.Product.Stock -= cartItem.Quantity;
+      cartItem.Product.Stock -= cartItem.Quantity;
     }
 
     await _orderRepository.CreateAsync(order);
-
-    if (dto.PaymentMethod == "COD")
-      await _cartRepository.ClearCartAsync(userId);
+    await _cartRepository.ClearCartAsync(userId);
 
     var notification = new Notification
     {
@@ -265,8 +247,7 @@ public class OrderService : IOrderService
       PriceAtPurchase = unitPrice,
     });
 
-    if (dto.PaymentMethod == "COD")
-      product.Stock -= dto.Quantity;
+    product.Stock -= dto.Quantity;
 
     await _orderRepository.CreateAsync(order);
 

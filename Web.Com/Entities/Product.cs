@@ -55,6 +55,8 @@ public class Product
 
   public bool IsFeatured { get; set; } = false;
 
+  public bool IsActive { get; set; } = true;
+
   [MaxLength(100)]
   public string? ServingSize { get; set; }
 
