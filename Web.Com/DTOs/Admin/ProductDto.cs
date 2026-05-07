@@ -16,6 +16,7 @@ public class ProductDto
   public string? Ingredients { get; set; }
   public bool IsFeatured { get; set; }
   public bool IsMemberOnly { get; set; }
+  public bool IsActive { get; set; }
   public string? Sku { get; set; }
   public DateTime? ExpiryDate { get; set; }
   public string? ServingSize { get; set; }

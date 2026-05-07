@@ -52,7 +52,7 @@ public class PaymentController : ControllerBase
         var options = new PaymentIntentCreateOptions
         {
             Amount = amountInCents,
-            Currency = "usd",
+            Currency = "cad",
             ReceiptEmail = order.User?.Email,
             Description = $"Order #{order.Id}",
             Metadata = new Dictionary<string, string>

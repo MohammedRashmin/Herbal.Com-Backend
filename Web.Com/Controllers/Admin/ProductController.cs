@@ -49,6 +49,14 @@ public class ProductController : ControllerBase
         return Ok(new { message = "Product updated successfully" });
     }
 
+    [HttpPatch("{id}/toggle-active")]
+    public async Task<ActionResult> ToggleActive(Guid id, [FromBody] bool isActive)
+    {
+        var result = await _productService.ToggleProductActiveAsync(id, isActive);
+        if (!result) return NotFound(new { message = "Product not found" });
+        return Ok(new { message = "Product status updated" });
+    }
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProduct(Guid id)
     {

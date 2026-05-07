@@ -97,6 +97,15 @@ public class ProductService : IProductService
     return true;
   }
 
+  public async Task<bool> ToggleProductActiveAsync(Guid id, bool isActive)
+  {
+    var product = await _productRepository.GetByIdAsync(id);
+    if (product == null) return false;
+    product.IsActive = isActive;
+    await _productRepository.UpdateAsync(product);
+    return true;
+  }
+
   public async Task<bool> DeleteProductAsync(Guid id)
   {
     var product = await _productRepository.GetByIdAsync(id);
@@ -339,6 +348,7 @@ public class ProductService : IProductService
       CategoryName = p.Category?.Name ?? "Uncategorized",
       IsFeatured = p.IsFeatured,
       IsMemberOnly = p.IsMemberOnly,
+      IsActive = p.IsActive,
       Sku = p.Sku,
       ExpiryDate = p.ExpiryDate,
       ServingSize = p.ServingSize,

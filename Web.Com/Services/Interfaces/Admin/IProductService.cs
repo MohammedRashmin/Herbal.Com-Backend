@@ -9,6 +9,7 @@ public interface IProductService
   Task<ProductDto?> GetProductByIdAdminAsync(Guid id);
   Task<ProductDto> CreateProductAsync(CreateProductDto dto);
   Task<bool> UpdateProductAsync(Guid id, UpdateProductDto dto);
+  Task<bool> ToggleProductActiveAsync(Guid id, bool isActive);
   Task<bool> DeleteProductAsync(Guid id);
   Task<(ProductDto Product, Guid ImageId)> AddProductImageAsync(Guid productId, IFormFile imageFile, bool isMain = false);
   Task<bool> RemoveProductImageAsync(Guid productId, Guid imageId);

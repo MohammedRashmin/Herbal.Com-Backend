@@ -1,4 +1,5 @@
 using Web.Com.DTOs.Admin;
+using Web.Com.DTOs.Shared;
 using Web.Com.DTOs.User;
 
 namespace Web.Com.Services.Interfaces.Admin;
@@ -15,6 +16,10 @@ public interface IOrderService
   Task<OrderResponseDto> CreateOrderDirectAsync(string userId, CreateOrderDirectDto dto);
   Task<IEnumerable<OrderDto>> GetMyOrdersAsync(string userId);
   Task<OrderDto?> GetOrderByIdAsync(string userId, Guid id);
+
+  // Guest
+  Task<OrderResponseDto> CreateGuestOrderAsync(string userId, GuestCreateOrderDto dto);
+  Task<GuestOrderSummaryDto?> GetGuestOrderAsync(Guid orderId, string email);
 }
 
 public class OrderResponseDto

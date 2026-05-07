@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Web.Com.DTOs.Admin;
+using Web.Com.DTOs.Shared;
 using Web.Com.DTOs.User;
 using Web.Com.Entities;
 using Web.Com.Helpers;
@@ -326,6 +327,92 @@ public class OrderService : IOrderService
           PriceAtPurchase = oi.PriceAtPurchase,
         })
         .ToList(),
+    };
+  }
+
+  // Guest Methods
+  public async Task<OrderResponseDto> CreateGuestOrderAsync(string userId, GuestCreateOrderDto dto)
+  {
+    if (dto.Items == null || dto.Items.Count == 0)
+      throw new InvalidOperationException("No items to order");
+
+    decimal total = 0m;
+    var orderItems = new List<OrderItem>();
+    var productsToUpdate = new List<(Product product, int quantity)>();
+
+    foreach (var item in dto.Items)
+    {
+      var product = await _productRepository.GetByIdAsync(item.ProductId)
+        ?? throw new InvalidOperationException($"Product not found: {item.ProductId}");
+
+      if (product.Stock < item.Quantity)
+        throw new InvalidOperationException($"Insufficient stock for {product.Name}");
+
+      var unitPrice = product.DiscountPrice ?? product.Price;
+      total += unitPrice * item.Quantity;
+
+      orderItems.Add(new OrderItem
+      {
+        ProductId = product.Id,
+        Quantity = item.Quantity,
+        PriceAtPurchase = unitPrice,
+      });
+
+      productsToUpdate.Add((product, item.Quantity));
+    }
+
+    var order = new Order
+    {
+      UserId = userId,
+      TotalAmount = total,
+      PaymentMethod = dto.PaymentMethod,
+      PaymentStatus = dto.PaymentMethod == "COD" ? "COD" : "Pending",
+      ShippingAddress = dto.ShippingAddress,
+      PhoneNumber = dto.PhoneNumber,
+      Status = OrderStatus.Pending,
+    };
+
+    foreach (var oi in orderItems)
+      order.OrderItems.Add(oi);
+
+    foreach (var (product, qty) in productsToUpdate)
+      product.Stock -= qty;
+
+    await _orderRepository.CreateAsync(order);
+
+    return new OrderResponseDto
+    {
+      OrderId = order.Id,
+      Message = "Guest order created successfully",
+    };
+  }
+
+  public async Task<GuestOrderSummaryDto?> GetGuestOrderAsync(Guid orderId, string email)
+  {
+    var o = await _orderRepository.GetByIdAsync(orderId);
+    if (o == null) return null;
+
+    if (string.IsNullOrEmpty(email) || !string.Equals(o.User?.Email, email, StringComparison.OrdinalIgnoreCase))
+      return null;
+
+    return new GuestOrderSummaryDto
+    {
+      Id = o.Id,
+      OrderDate = o.OrderDate,
+      TotalAmount = o.TotalAmount,
+      Status = o.Status.ToString(),
+      PaymentMethod = o.PaymentMethod,
+      PaymentStatus = o.PaymentStatus,
+      TrackingNumber = o.TrackingNumber,
+      Carrier = o.Carrier,
+      ShippingAddress = o.ShippingAddress,
+      Items = o.OrderItems.Select(oi => new GuestOrderItemDto
+      {
+        ProductName = oi.Product?.Name ?? "Unknown",
+        ProductImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(oi.Product?.Images.FirstOrDefault()?.ImageUrl),
+        Quantity = oi.Quantity,
+        PriceAtPurchase = oi.PriceAtPurchase,
+      }).ToList(),
     };
   }
 }
