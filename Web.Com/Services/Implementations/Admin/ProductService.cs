@@ -244,6 +244,7 @@ public class ProductService : IProductService
         Stock = p.Stock,
         ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(
           (p.Images.FirstOrDefault(i => i.IsMain) ?? p.Images.FirstOrDefault())?.ImageUrl),
+        CategoryId = p.CategoryId,
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,
@@ -323,6 +324,7 @@ public class ProductService : IProductService
         Stock = p.Stock,
         ImageUrl = CloudinaryUrlHelper.ToDeliveryUrl(
           (p.Images.FirstOrDefault(i => i.IsMain) ?? p.Images.FirstOrDefault())?.ImageUrl),
+        CategoryId = p.CategoryId,
         CategoryName = p.Category?.Name ?? "Uncategorized",
         IsFeatured = p.IsFeatured,
         IsMemberOnly = p.IsMemberOnly,

@@ -23,18 +23,23 @@ public class BannerService : IBannerService
 
     public async Task<IEnumerable<BannerDto>> GetActiveBannersAsync()
     {
+        var now = DateTime.UtcNow;
         var banners = await _bannerRepository.GetActiveAsync();
-        return banners.Select(b => new BannerDto
-        {
-            Id = b.Id,
-            Title = b.Title,
-            Subtitle = b.Subtitle,
-            ImageUrl = b.ImageUrl,
-            LinkType = b.ProductId != null ? "Product" : b.CategoryId != null ? "Category" : "External",
-            LinkValue = b.ProductId?.ToString() ?? b.CategoryId?.ToString() ?? b.ExternalUrl,
-            IsActive = b.IsActive,
-            Order = b.DisplayOrder
-        });
+        return banners
+            .Where(b => b.EndDate == null || b.EndDate > now)
+            .Select(b => new BannerDto
+            {
+                Id = b.Id,
+                Title = b.Title,
+                Subtitle = b.Subtitle,
+                ImageUrl = b.ImageUrl,
+                Tag = b.Tag,
+                EndDate = b.EndDate,
+                LinkType = b.ProductId != null ? "Product" : b.CategoryId != null ? "Category" : "External",
+                LinkValue = b.ProductId?.ToString() ?? b.CategoryId?.ToString() ?? b.ExternalUrl,
+                IsActive = b.IsActive,
+                Order = b.DisplayOrder
+            });
     }
 
     public async Task<BannerResponseDto> CreateBannerAsync(CreateBannerDto dto)

@@ -65,9 +65,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Web.Com API",
+        Title = "AroMasking Api Documentation",
         Version = "v1",
-        Description = "E-Commerce Backend API"
+        Description = "AroMasking E-Commerce Backend API"
     });
 
     // Add JWT Authentication to Swagger
@@ -197,8 +197,9 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "E-Commerce Backend API v1");
-    c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "AroMasking Api Documentation v1");
+    c.RoutePrefix = string.Empty;
+    c.DocumentTitle = "AroMasking Api Documentation";
 });
 
 if (app.Environment.IsDevelopment())
